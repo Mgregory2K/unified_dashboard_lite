@@ -1,0 +1,192 @@
+name: Green Gregory OS — Opportunity Scanner
+
+on:
+  schedule:
+    # 6 AM and 6 PM UTC (1 AM / 1 PM Central)
+    - cron: "0 6,18 * * *"
+
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Scanner source"
+        required: false
+        default: "all"
+        type: choice
+        options: [all, govdeals, publicsurplus, craigslist]
+      dry_run:
+        description: "Dry run (no email, no sheet write, no json commit)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+      seed_test_data:
+        description: "Insert seed test listings instead of scanning live"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
+      skip_leadgen:
+        description: "Skip lead gen (faster runs)"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+jobs:
+  pipeline:
+    name: Scan → Match → Alert → Sync → Export
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      contents: write   # needed to commit dashboard.json to gh-pages
+
+    steps:
+
+      # ── 1. Checkout ──────────────────────────────────────────────────────────
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so we can push to gh-pages branch
+
+      # ── 2. Python ────────────────────────────────────────────────────────────
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # ── 3. Dependencies ───────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install feedparser requests beautifulsoup4 gspread google-auth lxml
+
+      # ── 4. Restore DB cache ───────────────────────────────────────────────────
+      - name: Restore DB cache
+        uses: actions/cache@v4
+        with:
+          path: opportunity_os.db
+          key: db-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            db-${{ runner.os }}-
+
+      # ── 5. Read config from Google Sheets ─────────────────────────────────────
+      - name: Read config from Sheets
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GGG_SPREADSHEET_ID:      ${{ secrets.GGG_SPREADSHEET_ID }}
+        run: |
+          # Falls back to built-in defaults if credentials aren't set yet
+          python config_reader.py || python config_reader.py --fallback
+
+      # ── 6. Seed OR scan ───────────────────────────────────────────────────────
+      - name: Seed test data
+        if: ${{ github.event.inputs.seed_test_data == 'true' }}
+        run: python scanner_v3.py --seed-test-data
+
+      - name: Scan live feeds
+        if: ${{ github.event.inputs.seed_test_data != 'true' }}
+        run: |
+          SOURCE="${{ github.event.inputs.source || 'all' }}"
+          DRY="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY" = "true" ]; then
+            python scanner_v3.py --source "$SOURCE" --dry-run
+          else
+            python scanner_v3.py --source "$SOURCE"
+          fi
+
+      # ── 7. Match ──────────────────────────────────────────────────────────────
+      - name: Run matcher
+        run: |
+          DRY="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY" = "true" ]; then
+            python matcher_v3.py --dry-run
+          else
+            python matcher_v3.py
+          fi
+
+      # ── 8. Lead gen (optional, off by default for speed) ─────────────────────
+      - name: Run lead gen
+        if: ${{ github.event.inputs.skip_leadgen != 'true' }}
+        run: |
+          DRY="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY" = "true" ]; then
+            python leadgen_v3.py --dry-run
+          else
+            python leadgen_v3.py
+          fi
+
+      # ── 9. Email hot deal alert ───────────────────────────────────────────────
+      - name: Send email alert
+        env:
+          GGG_EMAIL_USER: ${{ secrets.GGG_EMAIL_USER }}
+          GGG_EMAIL_PASS: ${{ secrets.GGG_EMAIL_PASS }}
+          GGG_EMAIL_TO:   ${{ secrets.GGG_EMAIL_TO }}
+        run: |
+          DRY="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY" = "true" ]; then
+            python alert_emailer.py --dry-run
+          else
+            python alert_emailer.py
+          fi
+
+      # ── 10. Sync to Google Sheets ─────────────────────────────────────────────
+      - name: Sync to Google Sheets
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GGG_SPREADSHEET_ID:      ${{ secrets.GGG_SPREADSHEET_ID }}
+        run: |
+          DRY="${{ github.event.inputs.dry_run || 'false' }}"
+          if [ "$DRY" = "true" ]; then
+            python sheets_sync.py --dry-run
+          else
+            python sheets_sync.py
+          fi
+
+      # ── 11. Export dashboard.json ─────────────────────────────────────────────
+      - name: Export dashboard JSON
+        run: python export_json.py --out docs/dashboard.json
+
+      # ── 12. Commit dashboard.json to gh-pages ────────────────────────────────
+      - name: Commit dashboard.json to gh-pages branch
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name  "GGG OS Bot"
+          git config user.email "bot@greengregory.local"
+
+          # Stash the generated file, switch branch, apply it
+          cp docs/dashboard.json /tmp/dashboard.json
+
+          # Check if gh-pages branch exists; create if not
+          if git ls-remote --exit-code --heads origin gh-pages; then
+            git fetch origin gh-pages
+            git checkout gh-pages
+          else
+            git checkout --orphan gh-pages
+            git rm -rf . --quiet || true
+            # Copy the full docs folder contents
+            git checkout main -- docs/
+          fi
+
+          mkdir -p docs
+          cp /tmp/dashboard.json docs/dashboard.json
+          git add docs/dashboard.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to dashboard.json — skipping commit"
+          else
+            git commit -m "data: dashboard.json $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push origin gh-pages
+          fi
+
+          git checkout main
+
+      # ── 13. Upload DB artifact ────────────────────────────────────────────────
+      - name: Upload DB artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opportunity-db-${{ github.run_number }}
+          path: opportunity_os.db
+          retention-days: 30

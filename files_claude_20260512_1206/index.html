@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Gregory OS</title>
+<style>
+  :root {
+    --bg:       #0f1117;
+    --bg2:      #1a1d27;
+    --bg3:      #22263a;
+    --border:   #2e3248;
+    --text:     #e4e6f0;
+    --muted:    #8b90a8;
+    --green:    #22c55e;
+    --green-d:  #166534;
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --blue:     #3b82f6;
+    --teal:     #14b8a6;
+    --purple:   #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 16px; font-weight: 600; color: var(--green); }
+  #last-updated { font-size: 11px; color: var(--muted); }
+  #refresh-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 6px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer;
+  }
+  #refresh-btn:active { background: var(--bg3); }
+
+  /* Nav tabs */
+  nav {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex: none;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+
+  /* Main */
+  main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* KPI grid */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .kpi-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+    line-height: 1.2;
+  }
+  .kpi-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .kpi-value.amber { color: var(--amber); }
+  .kpi-value.blue  { color: var(--blue); }
+  .kpi-value.teal  { color: var(--teal); }
+
+  /* Section header */
+  .section-hd {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+
+  /* Deal cards */
+  .deal-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .deal-card:active { background: var(--bg3); }
+  .deal-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .deal-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .score-badge {
+    flex: none;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 5px;
+    padding: 2px 7px;
+    line-height: 1.6;
+  }
+  .score-hi   { background: #14532d; color: #4ade80; }
+  .score-mid  { background: #78350f; color: #fcd34d; }
+  .score-low  { background: #1e1b4b; color: #a5b4fc; }
+  .deal-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .tag {
+    background: var(--bg3);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .deal-numbers {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+  }
+  .num-buy   { color: var(--muted); }
+  .num-profit { color: var(--green); font-weight: 600; }
+  .num-margin { color: var(--amber); }
+  .deal-buyer {
+    font-size: 11px;
+    color: var(--teal);
+    margin-top: 4px;
+  }
+  .deal-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--blue);
+    text-decoration: none;
+  }
+
+  /* P&L table */
+  .pl-table { width: 100%; border-collapse: collapse; }
+  .pl-table th, .pl-table td {
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pl-table th {
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .pl-table tr:last-child td { border-bottom: none; }
+  .pl-table td:nth-child(n+3) { text-align: right; }
+  .pl-table th:nth-child(n+3) { text-align: right; }
+  .tbl-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+
+  /* Leads */
+  .lead-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .lead-name  { font-size: 13px; font-weight: 500; }
+  .lead-meta  { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .role-supplier { color: var(--purple); }
+  .role-buyer    { color: var(--teal); }
+
+  /* Filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .filter-btn.active {
+    background: var(--green-d);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .search-box {
+    flex: 1;
+    min-width: 160px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .search-box::placeholder { color: var(--muted); }
+  .search-box:focus { outline: none; border-color: var(--green); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty strong { display: block; font-size: 15px; margin-bottom: 6px; color: var(--text); }
+
+  /* Loading */
+  #loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .spinner {
+    width: 28px; height: 28px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Feed status */
+  .feed-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .feed-dot.ok     { background: var(--green); }
+  .feed-dot.warn   { background: var(--amber); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🟢 Green Gregory OS</h1>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="last-updated">loading…</span>
+    <button id="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-tab="pipeline">Pipeline</button>
+  <button class="tab-btn" data-tab="pl">P&amp;L</button>
+  <button class="tab-btn" data-tab="leads">Leads</button>
+  <button class="tab-btn" data-tab="feeds">Feeds</button>
+</nav>
+
+<div id="loading">
+  <div class="spinner"></div>
+  Loading dashboard…
+</div>
+
+<main id="app" style="display:none">
+
+  <!-- Pipeline tab -->
+  <div class="tab-panel active" id="tab-pipeline">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="govdeals">GovDeals</button>
+      <button class="filter-btn" data-filter="publicsurplus">PublicSurplus</button>
+      <button class="filter-btn" data-filter="craigslist">Craigslist</button>
+      <input class="search-box" id="pipeline-search" placeholder="Search deals…" oninput="renderPipeline()">
+    </div>
+    <div class="section-hd">Hot Deals</div>
+    <div id="pipeline-list"></div>
+  </div>
+
+  <!-- P&L tab -->
+  <div class="tab-panel" id="tab-pl">
+    <div class="section-hd">Profit &amp; Loss by Source</div>
+    <div class="tbl-wrap">
+      <table class="pl-table">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Deals</th>
+            <th>Avg Score</th>
+            <th>Total Buy</th>
+            <th>Est Profit</th>
+            <th>Avg Margin</th>
+          </tr>
+        </thead>
+        <tbody id="pl-tbody"></tbody>
+      </table>
+    </div>
+    <div class="section-hd" style="margin-top:20px">Total Est Pipeline Value</div>
+    <div class="kpi-grid" id="pl-totals"></div>
+  </div>
+
+  <!-- Leads tab -->
+  <div class="tab-panel" id="tab-leads">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-lfilter="all">All</button>
+      <button class="filter-btn" data-lfilter="supplier">Suppliers</button>
+      <button class="filter-btn" data-lfilter="buyer">Buyers</button>
+      <input class="search-box" id="leads-search" placeholder="Search leads…" oninput="renderLeads()">
+    </div>
+    <div class="section-hd">Business Contacts</div>
+    <div id="leads-list"></div>
+  </div>
+
+  <!-- Feeds tab -->
+  <div class="tab-panel" id="tab-feeds">
+    <div class="section-hd">Scan Feed Status</div>
+    <div class="tbl-wrap">
+      <table class="pl-table">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Status</th>
+            <th>Count</th>
+            <th>Last Scraped</th>
+          </tr>
+        </thead>
+        <tbody id="feeds-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const DATA_URL = 'dashboard.json';
+let DATA = null;
+let pipelineFilter = 'all';
+let leadsFilter    = 'all';
+
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
+  try {
+    const r = await fetch(DATA_URL + '?_=' + Date.now());
+    DATA = await r.json();
+    render();
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date(DATA.generated_at).toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      '<strong style="color:var(--red)">Could not load dashboard.json</strong>' +
+      '<div style="margin-top:8px;font-size:12px">Make sure export_json.py has run and committed the file.</div>';
+    return;
+  }
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function render() {
+  renderKPIs();
+  renderPipeline();
+  renderPL();
+  renderLeads();
+  renderFeeds();
+}
+
+function renderKPIs() {
+  const k = DATA.kpi;
+  const profit = k.total_profit_est >= 1000
+    ? '$' + (k.total_profit_est/1000).toFixed(1) + 'k'
+    : '$' + k.total_profit_est.toFixed(0);
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-value">${k.hot_matches}</div>
+      <div class="kpi-label">Hot Deals</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value teal">${profit}</div>
+      <div class="kpi-label">Est Profit</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value amber">${k.avg_score}</div>
+      <div class="kpi-label">Avg Score</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value blue">${k.total_listings}</div>
+      <div class="kpi-label">Listings</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${k.new_listings}</div>
+      <div class="kpi-label">New</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${k.total_leads}</div>
+      <div class="kpi-label">Leads</div>
+    </div>
+  `;
+}
+
+function renderPipeline() {
+  const q = (document.getElementById('pipeline-search').value || '').toLowerCase();
+  let rows = DATA.pipeline;
+  if (pipelineFilter !== 'all') rows = rows.filter(r => r.source === pipelineFilter);
+  if (q) rows = rows.filter(r =>
+    (r.title+r.location+r.buyer+r.source).toLowerCase().includes(q)
+  );
+
+  if (!rows.length) {
+    document.getElementById('pipeline-list').innerHTML =
+      '<div class="empty"><strong>No deals found</strong>Try a different filter or run the scanner.</div>';
+    return;
+  }
+
+  document.getElementById('pipeline-list').innerHTML = rows.map(r => {
+    const scoreClass = r.score >= 80 ? 'score-hi' : r.score >= 60 ? 'score-mid' : 'score-low';
+    const profit = r.profit_est ? '$' + r.profit_est.toLocaleString('en-US', {maximumFractionDigits:0}) : 'N/A';
+    const buy    = r.price_est  ? '$' + r.price_est.toLocaleString('en-US', {maximumFractionDigits:0})  : r.price_raw || 'N/A';
+    const margin = r.margin_pct ? r.margin_pct + '%' : '';
+    const end    = r.end_date   ? 'Ends ' + r.end_date : '';
+    return `
+    <div class="deal-card">
+      <div class="deal-top">
+        <div class="deal-title">${esc(r.title)}</div>
+        <span class="score-badge ${scoreClass}">${r.score}</span>
+      </div>
+      <div class="deal-meta">
+        <span class="tag">${r.source.toUpperCase()}</span>
+        ${r.location ? '<span class="tag">' + esc(r.location) + '</span>' : ''}
+        ${end ? '<span class="tag">' + end + '</span>' : ''}
+      </div>
+      <div class="deal-numbers">
+        <span class="num-buy">Buy: ${buy}</span>
+        <span class="num-profit">Profit: ${profit}</span>
+        ${margin ? '<span class="num-margin">' + margin + '</span>' : ''}
+      </div>
+      <div class="deal-buyer">→ ${esc(r.buyer)}</div>
+      ${r.url ? '<a class="deal-link" href="' + r.url + '" target="_blank" rel="noopener">View listing ↗</a>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderPL() {
+  const rows = DATA.pl_summary;
+  if (!rows.length) {
+    document.getElementById('pl-tbody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No data yet</td></tr>';
+    return;
+  }
+
+  let totalBuy = 0, totalProfit = 0, totalDeals = 0;
+  document.getElementById('pl-tbody').innerHTML = rows.map(r => {
+    totalBuy    += r.total_buy    || 0;
+    totalProfit += r.total_profit_est || 0;
+    totalDeals  += r.deal_count   || 0;
+    return `<tr>
+      <td>${r.source}</td>
+      <td>${r.status}</td>
+      <td>${r.deal_count}</td>
+      <td>${r.avg_score}</td>
+      <td>$${(r.total_buy||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+      <td style="color:var(--green)">$${(r.total_profit_est||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+      <td style="color:var(--amber)">${r.avg_margin_pct || 0}%</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('pl-totals').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-value blue">${totalDeals}</div>
+      <div class="kpi-label">Total Deals</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value amber">$${totalBuy.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+      <div class="kpi-label">Total Buy</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value teal">$${totalProfit.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+      <div class="kpi-label">Est Profit</div>
+    </div>
+  `;
+}
+
+function renderLeads() {
+  const q = (document.getElementById('leads-search').value || '').toLowerCase();
+  let rows = DATA.leads;
+  if (leadsFilter !== 'all') rows = rows.filter(r => r.role === leadsFilter);
+  if (q) rows = rows.filter(r =>
+    (r.name+r.city+r.state+r.category).toLowerCase().includes(q)
+  );
+
+  if (!rows.length) {
+    document.getElementById('leads-list').innerHTML =
+      '<div class="empty"><strong>No leads yet</strong>Run leadgen_v3.py to populate.</div>';
+    return;
+  }
+
+  document.getElementById('leads-list').innerHTML = rows.map(r => `
+    <div class="lead-card">
+      <div class="lead-name">${esc(r.name)}</div>
+      <div class="lead-meta">
+        <span class="role-${r.role}">${r.role.toUpperCase()}</span>
+        · ${esc(r.category)} · ${esc([r.city, r.state].filter(Boolean).join(', '))}
+        ${r.zip ? '· ' + r.zip : ''}
+      </div>
+      ${r.phone ? '<div class="lead-meta" style="margin-top:4px"><a href="tel:' + r.phone + '" style="color:var(--blue)">' + r.phone + '</a></div>' : ''}
+      ${r.website ? '<div class="lead-meta" style="margin-top:2px"><a href="' + r.website + '" target="_blank" style="color:var(--blue)" rel="noopener">' + r.website.replace(/^https?:\/\//,'') + '</a></div>' : ''}
+    </div>
+  `).join('');
+}
+
+function renderFeeds() {
+  const rows = DATA.feed_summary;
+  if (!rows.length) {
+    document.getElementById('feeds-tbody').innerHTML =
+      '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No feed data yet</td></tr>';
+    return;
+  }
+  document.getElementById('feeds-tbody').innerHTML = rows.map(r => {
+    const dotClass = r.status === 'matched' ? 'ok' : 'warn';
+    const scraped = r.last_scraped ? r.last_scraped.slice(0,16).replace('T',' ') + ' UTC' : '—';
+    return `<tr>
+      <td><span class="feed-dot ${dotClass}"></span>${r.source}</td>
+      <td>${r.status}</td>
+      <td>${r.count}</td>
+      <td>${scraped}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// Pipeline source filters
+document.querySelectorAll('[data-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pipelineFilter = btn.dataset.filter;
+    renderPipeline();
+  });
+});
+
+// Leads role filters
+document.querySelectorAll('[data-lfilter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-lfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    leadsFilter = btn.dataset.lfilter;
+    renderLeads();
+  });
+});
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+loadData();
+</script>
+</body>
+</html>

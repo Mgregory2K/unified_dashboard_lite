@@ -1,0 +1,66 @@
+PROJECT: Green Gregory Opportunity OS / ghost_arbitrage_scanner
+
+Local folder:
+C:\Projects\ghost_arbitrage_scanner
+
+GitHub repo:
+https://github.com/Mgregory2K/unified_dashboard_lite
+
+Google Sheet:
+Green Gregory Opportunity OS
+
+Sheet ID:
+173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w
+
+Current verified local status:
+- Python works: Python 3.14.3
+- Dependencies installed via:
+  python -m pip install -r requirements.txt
+- DB exists:
+  C:\Projects\ghost_arbitrage_scanner\opportunity_os.db
+- scanner.py --seed-test-data works
+- matcher.py works and creates 12 hot matches from 5 seed listings
+- matcher.py --board displays the board correctly
+- alert_emailer.py --dry-run prints full email preview
+- sheets_sync.py --dry-run previews:
+  Pipeline: 12
+  P&L Summary: 3
+  Feed Summary: 3
+- leadgen.py --force-osm --zips 47226 47025 45219 --limit 10 --dry-run works and found 102 dry-run leads
+- Sheet is empty because sheets_sync.py was only run with --dry-run
+
+Approved target architecture:
+1. Google Sheets = editable phone control panel
+2. GitHub Actions = automatic cloud runner
+3. Python scripts = scanner/matcher/leadgen/email/sheets/export engine
+4. GitHub Pages = read-only phone dashboard
+
+Claude was building:
+- config_reader.py
+- export_json.py
+- updated scripts to consume config.json
+- Google Sheet config tabs:
+  Search Criteria
+  Markets
+  Buyers
+  Leadgen Profiles
+  Scoring
+  Settings
+- output tabs:
+  Pipeline
+  P&L Summary
+  Feed Summary
+  Leads
+  Alerts
+- dashboard.json for GitHub Pages
+- static dashboard reading dashboard.json
+
+Instruction for next session:
+Do not let Claude claim completion without proof:
+1. Sheet tabs exist.
+2. config_reader.py --dry-run writes config.json.
+3. scripts read config.json instead of hardcoded criteria.
+4. export_json.py creates dashboard.json.
+5. GitHub Pages dashboard reads dashboard.json.
+6. GitHub Actions runs sequence successfully.
+7. Non-dry-run sheets_sync.py actually writes to the Sheet once credentials are configured.
