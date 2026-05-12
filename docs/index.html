@@ -2,624 +2,382 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Green Gregory OS</title>
 <style>
-  :root {
-    --bg:       #0f1117;
-    --bg2:      #1a1d27;
-    --bg3:      #22263a;
-    --border:   #2e3248;
-    --text:     #e4e6f0;
-    --muted:    #8b90a8;
-    --green:    #22c55e;
-    --green-d:  #166534;
-    --amber:    #f59e0b;
-    --red:      #ef4444;
-    --blue:     #3b82f6;
-    --teal:     #14b8a6;
-    --purple:   #a78bfa;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
-
-  /* Header */
-  header {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  header h1 { font-size: 16px; font-weight: 600; color: var(--green); }
-  #last-updated { font-size: 11px; color: var(--muted); }
-  #refresh-btn {
-    background: none; border: 1px solid var(--border);
-    color: var(--muted); border-radius: 6px;
-    padding: 4px 10px; font-size: 12px; cursor: pointer;
-  }
-  #refresh-btn:active { background: var(--bg3); }
-
-  /* Nav tabs */
-  nav {
-    display: flex;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  nav::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    flex: none;
-    padding: 10px 16px;
-    font-size: 13px;
-    color: var(--muted);
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .tab-btn.active {
-    color: var(--green);
-    border-bottom-color: var(--green);
-  }
-
-  /* Main */
-  main { padding: 16px; max-width: 900px; margin: 0 auto; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  /* KPI grid */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .kpi-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 10px;
-    text-align: center;
-  }
-  .kpi-value {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--green);
-    line-height: 1.2;
-  }
-  .kpi-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-  .kpi-value.amber { color: var(--amber); }
-  .kpi-value.blue  { color: var(--blue); }
-  .kpi-value.teal  { color: var(--teal); }
-
-  /* Section header */
-  .section-hd {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 10px;
-  }
-
-  /* Deal cards */
-  .deal-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-  }
-  .deal-card:active { background: var(--bg3); }
-  .deal-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  .deal-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    flex: 1;
-    line-height: 1.4;
-  }
-  .score-badge {
-    flex: none;
-    font-size: 12px;
-    font-weight: 700;
-    border-radius: 5px;
-    padding: 2px 7px;
-    line-height: 1.6;
-  }
-  .score-hi   { background: #14532d; color: #4ade80; }
-  .score-mid  { background: #78350f; color: #fcd34d; }
-  .score-low  { background: #1e1b4b; color: #a5b4fc; }
-  .deal-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    font-size: 11px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .tag {
-    background: var(--bg3);
-    border-radius: 4px;
-    padding: 1px 6px;
-  }
-  .deal-numbers {
-    display: flex;
-    gap: 14px;
-    font-size: 13px;
-  }
-  .num-buy   { color: var(--muted); }
-  .num-profit { color: var(--green); font-weight: 600; }
-  .num-margin { color: var(--amber); }
-  .deal-buyer {
-    font-size: 11px;
-    color: var(--teal);
-    margin-top: 4px;
-  }
-  .deal-link {
-    display: inline-block;
-    margin-top: 8px;
-    font-size: 11px;
-    color: var(--blue);
-    text-decoration: none;
-  }
-
-  /* P&L table */
-  .pl-table { width: 100%; border-collapse: collapse; }
-  .pl-table th, .pl-table td {
-    text-align: left;
-    padding: 8px 10px;
-    font-size: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .pl-table th {
-    color: var(--muted);
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.05em;
-  }
-  .pl-table tr:last-child td { border-bottom: none; }
-  .pl-table td:nth-child(n+3) { text-align: right; }
-  .pl-table th:nth-child(n+3) { text-align: right; }
-  .tbl-wrap {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 16px;
-    overflow-x: auto;
-  }
-
-  /* Leads */
-  .lead-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 8px;
-  }
-  .lead-name  { font-size: 13px; font-weight: 500; }
-  .lead-meta  { font-size: 11px; color: var(--muted); margin-top: 3px; }
-  .role-supplier { color: var(--purple); }
-  .role-buyer    { color: var(--teal); }
-
-  /* Filter bar */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
-  }
-  .filter-btn {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .filter-btn.active {
-    background: var(--green-d);
-    border-color: var(--green);
-    color: var(--green);
-  }
-  .search-box {
-    flex: 1;
-    min-width: 160px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 10px;
-    color: var(--text);
-    font-size: 13px;
-  }
-  .search-box::placeholder { color: var(--muted); }
-  .search-box:focus { outline: none; border-color: var(--green); }
-
-  /* Empty state */
-  .empty {
-    text-align: center;
-    padding: 40px 20px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-  .empty strong { display: block; font-size: 15px; margin-bottom: 6px; color: var(--text); }
-
-  /* Loading */
-  #loading {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-  }
-  .spinner {
-    width: 28px; height: 28px;
-    border: 2px solid var(--border);
-    border-top-color: var(--green);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 12px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Feed status */
-  .feed-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    margin-right: 5px;
-  }
-  .feed-dot.ok     { background: var(--green); }
-  .feed-dot.warn   { background: var(--amber); }
+:root{
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--border:#2e3248;
+  --text:#e4e6f0;--muted:#8b90a8;--hint:#555a72;
+  --green:#22c55e;--green-d:#14532d;--green-bg:#052e16;
+  --amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+  --teal:#14b8a6;--teal-d:#134e4a;--purple:#a78bfa;--coral:#f97316;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5}
+#seed-banner{display:none;background:#7f1d1d;color:#fca5a5;padding:8px 16px;font-size:12px;text-align:center;font-weight:600}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+header h1{font-size:15px;font-weight:600;color:var(--green)}
+#last-updated{font-size:11px;color:var(--muted)}
+#refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
+nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+.tab-btn{flex:none;padding:9px 14px;font-size:12px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
+.tab-badge{display:inline-block;background:var(--bg3);border-radius:9px;padding:1px 6px;font-size:10px;margin-left:4px;color:var(--muted)}
+.tab-btn.active .tab-badge{background:var(--green-d);color:var(--green)}
+main{padding:14px;max-width:960px;margin:0 auto}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
+@media(max-width:500px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 8px;text-align:center}
+.kpi-value{font-size:20px;font-weight:700;line-height:1.2}
+.kpi-label{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.kv-green{color:var(--green)}.kv-teal{color:var(--teal)}.kv-amber{color:var(--amber)}.kv-blue{color:var(--blue)}.kv-purple{color:var(--purple)}
+.filter-bar{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.fbtn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer}
+.fbtn.active{background:var(--green-d);border-color:var(--green);color:var(--green)}
+.fsearch{flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:13px}
+.fsearch::placeholder{color:var(--hint)}.fsearch:focus{outline:none;border-color:var(--green)}
+.sec-hd{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
+.supply-card,.deal-card,.lead-card,.asm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.asm-card{border-color:#3b0764}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
+.card-title{font-size:13px;font-weight:500;flex:1;line-height:1.4}
+.score-badge{flex:none;font-size:12px;font-weight:700;border-radius:5px;padding:2px 7px}
+.sh{background:#14532d;color:#4ade80}.sm{background:#78350f;color:#fcd34d}.sl{background:#1e1b4b;color:#a5b4fc}
+.seed-tag{background:#7f1d1d;color:#fca5a5;font-size:10px;border-radius:4px;padding:1px 5px;margin-left:6px}
+.dead-link-tag{background:var(--bg3);color:var(--hint);font-size:10px;border-radius:4px;padding:1px 5px}
+.card-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:5px}
+.tag{background:var(--bg3);border-radius:4px;padding:1px 6px}
+.card-nums{display:flex;gap:12px;font-size:13px;flex-wrap:wrap}
+.n-buy{color:var(--muted)}.n-sell{color:var(--teal);font-weight:600}.n-profit{color:var(--green);font-weight:600}.n-margin{color:var(--amber)}
+.card-link{display:inline-block;margin-top:7px;font-size:11px;color:var(--blue);text-decoration:none}
+.deal-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0;font-size:12px}
+@media(max-width:480px){.deal-sides{grid-template-columns:1fr}}
+.side-box{background:var(--bg3);border-radius:8px;padding:9px 11px}
+.side-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.side-supply .side-label{color:var(--amber)}.side-buyer .side-label{color:var(--teal)}
+.reason-box{background:var(--bg3);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--muted);margin:6px 0}
+.action-box{background:var(--green-bg);border:1px solid var(--green-d);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--green);margin-top:6px}
+.action-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;color:#4ade80}
+.asm-conf{font-size:11px;color:var(--purple)}
+.asm-desc{font-size:12px;color:var(--muted);margin:6px 0;line-height:1.5}
+.asm-items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.asm-item{background:var(--bg3);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--muted)}
+.asm-action{background:#1e1b4b;border:1px solid #3730a3;border-radius:7px;padding:7px 10px;font-size:12px;color:#a5b4fc;margin-top:5px}
+.lead-name{font-size:13px;font-weight:500}
+.lead-role-supplier{color:var(--purple)}.lead-role-buyer{color:var(--teal)}
+.lead-meta{font-size:11px;color:var(--muted);margin-top:3px}
+.conf-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;margin-top:5px;width:120px}
+.conf-bar{height:4px;border-radius:2px;background:var(--teal)}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 10px;font-size:12px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-weight:500;text-transform:uppercase;font-size:10px;letter-spacing:.05em;background:var(--bg3)}
+tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+.tg{color:var(--green)}.ta{color:var(--amber)}.tt{color:var(--teal)}.tm{color:var(--muted)}
+.fdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.fdot-ok{background:var(--green)}.fdot-warn{background:var(--amber)}.fdot-err{background:var(--red)}
+.empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px}
+.empty strong{display:block;font-size:15px;margin-bottom:6px;color:var(--text)}
+#loading{text-align:center;padding:60px 20px;color:var(--muted)}
+.spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.totals-row{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+.tv{font-weight:700;color:var(--text)}.tg2{font-weight:700;color:var(--green)}
 </style>
 </head>
 <body>
-
+<div id="seed-banner">DEMO / SEED DATA — Links are placeholders. Run scanner.py with live feeds to replace.</div>
 <header>
   <h1>🟢 Green Gregory OS</h1>
   <div style="display:flex;align-items:center;gap:10px">
     <span id="last-updated">loading…</span>
-    <button id="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <button id="refresh-btn" onclick="loadData()">↻</button>
   </div>
 </header>
-
 <nav>
-  <button class="tab-btn active" data-tab="pipeline">Pipeline</button>
+  <button class="tab-btn active" data-tab="supply">Supply <span class="tab-badge" id="badge-supply">0</span></button>
+  <button class="tab-btn" data-tab="buyers">Buyers <span class="tab-badge" id="badge-buyers">0</span></button>
+  <button class="tab-btn" data-tab="matched">Matched Deals <span class="tab-badge" id="badge-matched">0</span></button>
+  <button class="tab-btn" data-tab="assembly">Assembly <span class="tab-badge" id="badge-assembly">0</span></button>
+  <button class="tab-btn" data-tab="pipeline">Pipeline</button>
   <button class="tab-btn" data-tab="pl">P&amp;L</button>
-  <button class="tab-btn" data-tab="leads">Leads</button>
   <button class="tab-btn" data-tab="feeds">Feeds</button>
 </nav>
-
-<div id="loading">
-  <div class="spinner"></div>
-  Loading dashboard…
-</div>
-
+<div id="loading"><div class="spinner"></div>Loading dashboard…</div>
 <main id="app" style="display:none">
 
-  <!-- Pipeline tab -->
-  <div class="tab-panel active" id="tab-pipeline">
-    <div class="kpi-grid" id="kpi-grid"></div>
+  <div class="tab-panel active" id="tab-supply">
+    <div class="kpi-grid" id="kpi-supply"></div>
     <div class="filter-bar">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn" data-filter="govdeals">GovDeals</button>
-      <button class="filter-btn" data-filter="publicsurplus">PublicSurplus</button>
-      <button class="filter-btn" data-filter="craigslist">Craigslist</button>
-      <input class="search-box" id="pipeline-search" placeholder="Search deals…" oninput="renderPipeline()">
+      <button class="fbtn active" data-sf="all">All</button>
+      <button class="fbtn" data-sf="govdeals">GovDeals</button>
+      <button class="fbtn" data-sf="publicsurplus">PublicSurplus</button>
+      <button class="fbtn" data-sf="craigslist">Craigslist</button>
+      <input class="fsearch" id="supply-search" placeholder="Search supply…" oninput="renderSupply()">
     </div>
-    <div class="section-hd">Hot Deals</div>
-    <div id="pipeline-list"></div>
+    <div class="totals-row" id="supply-totals"></div>
+    <div class="sec-hd">Supply Opportunities</div>
+    <div id="supply-list"></div>
   </div>
 
-  <!-- P&L tab -->
+  <div class="tab-panel" id="tab-buyers">
+    <div class="filter-bar">
+      <button class="fbtn active" data-bf="all">All</button>
+      <button class="fbtn" data-bf="supplier">Suppliers</button>
+      <button class="fbtn" data-bf="buyer">Buyers</button>
+      <input class="fsearch" id="buyers-search" placeholder="Search leads…" oninput="renderBuyers()">
+    </div>
+    <div class="totals-row" id="buyers-totals"></div>
+    <div class="sec-hd">Buyer / Demand Leads</div>
+    <div id="buyers-list"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-matched">
+    <div class="filter-bar">
+      <button class="fbtn active" data-mf="all">All</button>
+      <button class="fbtn" data-mf="hi">Score ≥80</button>
+      <button class="fbtn" data-mf="med">Score 60–79</button>
+      <button class="fbtn" data-mf="live">Live URLs only</button>
+      <input class="fsearch" id="matched-search" placeholder="Search deals…" oninput="renderMatched()">
+    </div>
+    <div class="totals-row" id="matched-totals"></div>
+    <div class="sec-hd">Matched Deals — Supply meets Demand</div>
+    <div id="matched-list"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-assembly">
+    <div class="sec-hd">Business Assembly Opportunities</div>
+    <div id="assembly-list"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-pipeline">
+    <div class="sec-hd">Pipeline Summary by Source</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Source</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Est Profit</th></tr></thead>
+      <tbody id="pipeline-tbody"></tbody>
+    </table></div>
+    <div class="kpi-grid" id="pipeline-kpis" style="margin-top:16px"></div>
+  </div>
+
   <div class="tab-panel" id="tab-pl">
-    <div class="section-hd">Profit &amp; Loss by Source</div>
-    <div class="tbl-wrap">
-      <table class="pl-table">
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Status</th>
-            <th>Deals</th>
-            <th>Avg Score</th>
-            <th>Total Buy</th>
-            <th>Est Profit</th>
-            <th>Avg Margin</th>
-          </tr>
-        </thead>
-        <tbody id="pl-tbody"></tbody>
-      </table>
-    </div>
-    <div class="section-hd" style="margin-top:20px">Total Est Pipeline Value</div>
-    <div class="kpi-grid" id="pl-totals"></div>
+    <div class="sec-hd">Profit &amp; Loss by Source / Status</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Source</th><th>Status</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Total Sell Est</th><th class="r">Est Profit</th><th class="r">Avg Margin</th></tr></thead>
+      <tbody id="pl-tbody"></tbody>
+    </table></div>
   </div>
 
-  <!-- Leads tab -->
-  <div class="tab-panel" id="tab-leads">
-    <div class="filter-bar">
-      <button class="filter-btn active" data-lfilter="all">All</button>
-      <button class="filter-btn" data-lfilter="supplier">Suppliers</button>
-      <button class="filter-btn" data-lfilter="buyer">Buyers</button>
-      <input class="search-box" id="leads-search" placeholder="Search leads…" oninput="renderLeads()">
-    </div>
-    <div class="section-hd">Business Contacts</div>
-    <div id="leads-list"></div>
-  </div>
-
-  <!-- Feeds tab -->
   <div class="tab-panel" id="tab-feeds">
-    <div class="section-hd">Scan Feed Status</div>
-    <div class="tbl-wrap">
-      <table class="pl-table">
-        <thead>
-          <tr>
-            <th>Source</th>
-            <th>Status</th>
-            <th>Count</th>
-            <th>Last Scraped</th>
-          </tr>
-        </thead>
-        <tbody id="feeds-tbody"></tbody>
-      </table>
-    </div>
+    <div class="sec-hd">Feed Health</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Source</th><th>Status</th><th class="r">Count</th><th>Last Scraped</th></tr></thead>
+      <tbody id="feeds-tbody"></tbody>
+    </table></div>
   </div>
 
 </main>
-
 <script>
-const DATA_URL = 'dashboard.json';
-let DATA = null;
-let pipelineFilter = 'all';
-let leadsFilter    = 'all';
+const DATA_URL='dashboard.json';
+let D=null,supplyFilter='all',buyerFilter='all',matchFilter='all';
 
-async function loadData() {
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('app').style.display = 'none';
-  try {
-    const r = await fetch(DATA_URL + '?_=' + Date.now());
-    DATA = await r.json();
-    render();
-    document.getElementById('last-updated').textContent =
-      'Updated ' + new Date(DATA.generated_at).toLocaleTimeString();
-  } catch(e) {
-    document.getElementById('loading').innerHTML =
-      '<strong style="color:var(--red)">Could not load dashboard.json</strong>' +
-      '<div style="margin-top:8px;font-size:12px">Make sure export_json.py has run and committed the file.</div>';
+async function loadData(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('app').style.display='none';
+  try{
+    const r=await fetch(DATA_URL+'?_='+Date.now());
+    D=await r.json();render();
+    document.getElementById('last-updated').textContent='Updated '+new Date(D.generated_at).toLocaleTimeString();
+  }catch(e){
+    document.getElementById('loading').innerHTML='<strong style="color:var(--red)">Failed to load dashboard.json</strong><div style="margin-top:8px;font-size:12px">Run export_json.py and commit docs/dashboard.json to the repo.</div>';
     return;
   }
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
 }
 
-function render() {
-  renderKPIs();
-  renderPipeline();
-  renderPL();
-  renderLeads();
-  renderFeeds();
+function render(){
+  if(D.has_seed_data)document.getElementById('seed-banner').style.display='block';
+  document.getElementById('badge-supply').textContent=D.supply_opps.length;
+  document.getElementById('badge-buyers').textContent=D.buyer_leads.length;
+  document.getElementById('badge-matched').textContent=D.matched_deals.length;
+  document.getElementById('badge-assembly').textContent=D.assembly_opps.length;
+  renderSupplyKPIs();renderSupply();renderBuyers();renderMatched();
+  renderAssembly();renderPipeline();renderPL();renderFeeds();
 }
 
-function renderKPIs() {
-  const k = DATA.kpi;
-  const profit = k.total_profit_est >= 1000
-    ? '$' + (k.total_profit_est/1000).toFixed(1) + 'k'
-    : '$' + k.total_profit_est.toFixed(0);
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-value">${k.hot_matches}</div>
-      <div class="kpi-label">Hot Deals</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value teal">${profit}</div>
-      <div class="kpi-label">Est Profit</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value amber">${k.avg_score}</div>
-      <div class="kpi-label">Avg Score</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value blue">${k.total_listings}</div>
-      <div class="kpi-label">Listings</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${k.new_listings}</div>
-      <div class="kpi-label">New</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${k.total_leads}</div>
-      <div class="kpi-label">Leads</div>
-    </div>
-  `;
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function $m(v){return v!=null?'$'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0}):'N/A';}
+function pct(v){return v!=null?v+'%':'N/A';}
+function sc(s){return s>=80?'sh':s>=60?'sm':'sl';}
+function stag(is_seed){return is_seed?'<span class="seed-tag">DEMO</span>':'';}
+function lnk(url,live){
+  if(live&&url)return'<a class="card-link" href="'+esc(url)+'" target="_blank" rel="noopener">View listing ↗</a>';
+  if(url)return'<span class="dead-link-tag">Demo URL — not live</span>';
+  return'';
 }
 
-function renderPipeline() {
-  const q = (document.getElementById('pipeline-search').value || '').toLowerCase();
-  let rows = DATA.pipeline;
-  if (pipelineFilter !== 'all') rows = rows.filter(r => r.source === pipelineFilter);
-  if (q) rows = rows.filter(r =>
-    (r.title+r.location+r.buyer+r.source).toLowerCase().includes(q)
-  );
+function renderSupplyKPIs(){
+  const k=D.kpi;
+  document.getElementById('kpi-supply').innerHTML=
+    '<div class="kpi-card"><div class="kpi-value kv-blue">'+k.total_supply+'</div><div class="kpi-label">Supply Items</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-green">'+k.hot_matches+'</div><div class="kpi-label">Hot Matches</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-teal">'+$m(k.total_profit_est)+'</div><div class="kpi-label">Est Profit</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-purple">'+k.assembly_count+'</div><div class="kpi-label">Assembly Opps</div></div>';
+}
 
-  if (!rows.length) {
-    document.getElementById('pipeline-list').innerHTML =
-      '<div class="empty"><strong>No deals found</strong>Try a different filter or run the scanner.</div>';
-    return;
-  }
+function renderSupply(){
+  const q=(document.getElementById('supply-search').value||'').toLowerCase();
+  let rows=D.supply_opps;
+  if(supplyFilter!=='all')rows=rows.filter(r=>r.source===supplyFilter);
+  if(q)rows=rows.filter(r=>(r.title+r.source+r.location+r.category).toLowerCase().includes(q));
+  const tb=rows.reduce((a,r)=>a+(r.price_est||0),0);
+  document.getElementById('supply-totals').innerHTML=
+    'Showing <span class="tv">'+rows.length+'</span> &nbsp; Est total buy: <span class="tv">'+$m(tb)+'</span>'+
+    (D.has_seed_data?' &nbsp; <span style="color:var(--amber)">⚠ Includes demo data</span>':'');
+  if(!rows.length){document.getElementById('supply-list').innerHTML='<div class="empty"><strong>No supply items</strong>Run scanner.py to pull live listings.</div>';return;}
+  document.getElementById('supply-list').innerHTML=rows.map(r=>
+    '<div class="supply-card">'+
+      '<div class="card-top"><div class="card-title">'+esc(r.title)+stag(r.is_seed)+'</div></div>'+
+      '<div class="card-meta">'+
+        '<span class="tag">'+esc(r.source.toUpperCase())+'</span>'+
+        (r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+
+        (r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+
+        (r.end_date?'<span class="tag">Ends '+r.end_date+'</span>':'')+
+        (r.status!=='new'?'<span class="tag" style="color:var(--green)">'+r.status+'</span>':'')+
+      '</div>'+
+      '<div class="card-nums"><span class="n-buy">List: <strong>'+esc(r.price_raw||'N/A')+'</strong></span>'+(r.price_est?'<span class="n-buy">Est: '+$m(r.price_est)+'</span>':'')+'</div>'+
+      (r.keywords&&r.keywords.length?'<div style="margin-top:5px;font-size:11px;color:var(--hint)">'+r.keywords.slice(0,6).map(esc).join(', ')+'</div>':'')+
+      lnk(r.url,r.url_live)+
+    '</div>'
+  ).join('');
+}
 
-  document.getElementById('pipeline-list').innerHTML = rows.map(r => {
-    const scoreClass = r.score >= 80 ? 'score-hi' : r.score >= 60 ? 'score-mid' : 'score-low';
-    const profit = r.profit_est ? '$' + r.profit_est.toLocaleString('en-US', {maximumFractionDigits:0}) : 'N/A';
-    const buy    = r.price_est  ? '$' + r.price_est.toLocaleString('en-US', {maximumFractionDigits:0})  : r.price_raw || 'N/A';
-    const margin = r.margin_pct ? r.margin_pct + '%' : '';
-    const end    = r.end_date   ? 'Ends ' + r.end_date : '';
-    return `
-    <div class="deal-card">
-      <div class="deal-top">
-        <div class="deal-title">${esc(r.title)}</div>
-        <span class="score-badge ${scoreClass}">${r.score}</span>
-      </div>
-      <div class="deal-meta">
-        <span class="tag">${r.source.toUpperCase()}</span>
-        ${r.location ? '<span class="tag">' + esc(r.location) + '</span>' : ''}
-        ${end ? '<span class="tag">' + end + '</span>' : ''}
-      </div>
-      <div class="deal-numbers">
-        <span class="num-buy">Buy: ${buy}</span>
-        <span class="num-profit">Profit: ${profit}</span>
-        ${margin ? '<span class="num-margin">' + margin + '</span>' : ''}
-      </div>
-      <div class="deal-buyer">→ ${esc(r.buyer)}</div>
-      ${r.url ? '<a class="deal-link" href="' + r.url + '" target="_blank" rel="noopener">View listing ↗</a>' : ''}
-    </div>`;
+function renderBuyers(){
+  const q=(document.getElementById('buyers-search').value||'').toLowerCase();
+  let rows=D.buyer_leads;
+  if(buyerFilter!=='all')rows=rows.filter(r=>r.role===buyerFilter);
+  if(q)rows=rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
+  const nS=rows.filter(r=>r.role==='supplier').length,nB=rows.filter(r=>r.role==='buyer').length;
+  document.getElementById('buyers-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span> &nbsp; Suppliers: <span class="tv">'+nS+'</span> &nbsp; Buyers: <span class="tv">'+nB+'</span>';
+  if(!rows.length){document.getElementById('buyers-list').innerHTML='<div class="empty"><strong>No leads yet</strong>Run leadgen.py to find contacts.</div>';return;}
+  document.getElementById('buyers-list').innerHTML=rows.map(r=>
+    '<div class="lead-card">'+
+      '<div class="lead-name">'+esc(r.name)+'</div>'+
+      '<div class="lead-meta"><span class="lead-role-'+r.role+'">'+(r.role||'').toUpperCase()+'</span> · '+esc(r.category)+(r.location?' · '+esc(r.location):'')+(r.zip?' · '+r.zip:'')+'</div>'+
+      (r.phone?'<div class="lead-meta" style="margin-top:3px"><a href="tel:'+esc(r.phone)+'" style="color:var(--blue)">'+esc(r.phone)+'</a></div>':'')+
+      (r.website_live?'<div class="lead-meta" style="margin-top:2px"><a href="'+esc(r.website)+'" target="_blank" style="color:var(--blue)" rel="noopener">'+esc(r.website.replace(/^https?:\/\//,''))+'</a></div>':'')+
+      (r.confidence?'<div style="margin-top:6px"><div class="conf-bar-wrap"><div class="conf-bar" style="width:'+r.confidence+'%"></div></div><span style="font-size:10px;color:var(--muted)">'+r.confidence+'% confidence</span></div>':'')+
+    '</div>'
+  ).join('');
+}
+
+function renderMatched(){
+  const q=(document.getElementById('matched-search').value||'').toLowerCase();
+  let rows=D.matched_deals;
+  if(matchFilter==='hi')rows=rows.filter(r=>r.score>=80);
+  if(matchFilter==='med')rows=rows.filter(r=>r.score>=60&&r.score<80);
+  if(matchFilter==='live')rows=rows.filter(r=>r.supply_url_live);
+  if(q)rows=rows.filter(r=>(r.supply_title+r.buyer_name+r.supply_source+r.supply_location).toLowerCase().includes(q));
+  const tp=rows.reduce((a,r)=>a+(r.profit_est||0),0),ts=rows.reduce((a,r)=>a+(r.sell_est||0),0);
+  document.getElementById('matched-totals').innerHTML=
+    'Showing <span class="tv">'+rows.length+'</span> &nbsp; '+
+    'Sell pipeline: <span class="tv">'+$m(ts)+'</span> &nbsp; '+
+    'Est profit: <span class="tg2">'+$m(tp)+'</span>';
+  if(!rows.length){document.getElementById('matched-list').innerHTML='<div class="empty"><strong>No matched deals</strong>Run matcher.py after scanner.py.</div>';return;}
+  document.getElementById('matched-list').innerHTML=rows.map(r=>
+    '<div class="deal-card">'+
+      '<div class="card-top"><div class="card-title">'+esc(r.supply_title)+stag(r.is_seed)+'</div><span class="score-badge '+sc(r.score)+'">'+r.score+'</span></div>'+
+      '<div class="deal-sides">'+
+        '<div class="side-box side-supply">'+
+          '<div class="side-label">Supply / Buy</div>'+
+          '<div>'+esc(r.supply_source.toUpperCase())+'</div>'+
+          '<div style="color:var(--muted);font-size:11px">'+esc(r.supply_location||'—')+'</div>'+
+          '<div style="margin-top:4px"><strong>Buy: '+$m(r.buy_price)+'</strong>'+(r.buy_price_raw?' ('+esc(r.buy_price_raw)+')':'')+'</div>'+
+          (r.supply_end_date?'<div style="color:var(--amber);font-size:11px">Ends '+r.supply_end_date+'</div>':'')+
+          lnk(r.supply_url,r.supply_url_live)+
+        '</div>'+
+        '<div class="side-box side-buyer">'+
+          '<div class="side-label">Demand / Sell</div>'+
+          '<div><strong>'+esc(r.buyer_name)+'</strong></div>'+
+          '<div style="margin-top:4px">'+
+            '<div>Sell est: <strong style="color:var(--teal)">'+$m(r.sell_est)+'</strong></div>'+
+            '<div>Spread: <strong style="color:var(--amber)">'+$m(r.spread)+'</strong></div>'+
+            '<div>Margin: <strong style="color:var(--green)">'+pct(r.margin_pct)+'</strong></div>'+
+            '<div>Est profit: <strong style="color:var(--green)">'+$m(r.profit_est)+'</strong></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      (r.match_reason?'<div class="reason-box">📌 '+esc(r.match_reason)+'</div>':'')+
+      (r.next_action?'<div class="action-box"><div class="action-label">Next action</div>'+esc(r.next_action)+'</div>':'')+
+    '</div>'
+  ).join('');
+}
+
+function renderAssembly(){
+  const rows=D.assembly_opps;
+  if(!rows.length){document.getElementById('assembly-list').innerHTML='<div class="empty"><strong>No assembly opportunities yet</strong>Run matcher.py with data containing multiple item categories.</div>';return;}
+  document.getElementById('assembly-list').innerHTML=rows.map(r=>
+    '<div class="asm-card">'+
+      '<div class="card-top"><div class="card-title">'+esc(r.title)+stag(r.is_seed)+'</div><span class="asm-conf">'+r.confidence+'% confidence</span></div>'+
+      '<div class="asm-desc">'+esc(r.description)+'</div>'+
+      '<div class="asm-items">'+(r.categories||[]).map(c=>'<span class="asm-item">'+esc(c)+'</span>').join('')+'</div>'+
+      '<div class="card-nums">'+
+        '<span class="n-buy">Total buy: <strong>'+$m(r.total_buy)+'</strong></span>'+
+        '<span class="n-sell">Revenue est: <strong>'+$m(r.revenue_est)+'</strong></span>'+
+        '<span class="n-profit">Profit est: <strong>'+$m(r.profit_est)+'</strong></span>'+
+      '</div>'+
+      (r.next_action?'<div class="asm-action"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#818cf8">Next Action</span><br>'+esc(r.next_action)+'</div>':'')+
+    '</div>'
+  ).join('');
+}
+
+function renderPipeline(){
+  const rows=D.pipeline;
+  if(!rows.length){document.getElementById('pipeline-tbody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No data yet</td></tr>';return;}
+  let tB=0,tP=0,tD=0;
+  document.getElementById('pipeline-tbody').innerHTML=rows.map(r=>{
+    tB+=r.total_buy||0;tP+=r.total_profit||0;tD+=r.count||0;
+    return'<tr><td>'+esc(r.source)+'</td><td class="r">'+r.count+'</td><td class="r ta">'+r.avg_score+'</td><td class="r tm">'+$m(r.total_buy)+'</td><td class="r tg">'+$m(r.total_profit)+'</td></tr>';
+  }).join('');
+  document.getElementById('pipeline-kpis').innerHTML=
+    '<div class="kpi-card"><div class="kpi-value kv-blue">'+tD+'</div><div class="kpi-label">Total Deals</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-amber">'+$m(tB)+'</div><div class="kpi-label">Total Buy</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-green">'+$m(tP)+'</div><div class="kpi-label">Est Profit</div></div>'+
+    '<div class="kpi-card"><div class="kpi-value kv-teal">'+$m(D.kpi.total_sell_est)+'</div><div class="kpi-label">Total Sell Est</div></div>';
+}
+
+function renderPL(){
+  const rows=D.pl_summary;
+  if(!rows.length){document.getElementById('pl-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No P&L data yet</td></tr>';return;}
+  document.getElementById('pl-tbody').innerHTML=rows.map(r=>
+    '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.deal_count+'</td><td class="r ta">'+r.avg_score+'</td><td class="r tm">'+$m(r.total_buy)+'</td><td class="r tt">'+$m(r.total_sell_est)+'</td><td class="r tg">'+$m(r.total_profit_est)+'</td><td class="r ta">'+pct(r.avg_margin_pct)+'</td></tr>'
+  ).join('');
+}
+
+function renderFeeds(){
+  const rows=D.feed_summary;
+  if(!rows.length){document.getElementById('feeds-tbody').innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No feed data yet</td></tr>';return;}
+  document.getElementById('feeds-tbody').innerHTML=rows.map(r=>{
+    const dc=r.status==='matched'?'fdot-ok':r.status==='new'?'fdot-warn':'fdot-err';
+    const ts=r.last_scraped?r.last_scraped.slice(0,16).replace('T',' ')+' UTC':'—';
+    return'<tr><td><span class="fdot '+dc+'"></span>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.count+'</td><td>'+ts+'</td></tr>';
   }).join('');
 }
 
-function renderPL() {
-  const rows = DATA.pl_summary;
-  if (!rows.length) {
-    document.getElementById('pl-tbody').innerHTML =
-      '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No data yet</td></tr>';
-    return;
-  }
-
-  let totalBuy = 0, totalProfit = 0, totalDeals = 0;
-  document.getElementById('pl-tbody').innerHTML = rows.map(r => {
-    totalBuy    += r.total_buy    || 0;
-    totalProfit += r.total_profit_est || 0;
-    totalDeals  += r.deal_count   || 0;
-    return `<tr>
-      <td>${r.source}</td>
-      <td>${r.status}</td>
-      <td>${r.deal_count}</td>
-      <td>${r.avg_score}</td>
-      <td>$${(r.total_buy||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
-      <td style="color:var(--green)">$${(r.total_profit_est||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
-      <td style="color:var(--amber)">${r.avg_margin_pct || 0}%</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('pl-totals').innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-value blue">${totalDeals}</div>
-      <div class="kpi-label">Total Deals</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value amber">$${totalBuy.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
-      <div class="kpi-label">Total Buy</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value teal">$${totalProfit.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
-      <div class="kpi-label">Est Profit</div>
-    </div>
-  `;
-}
-
-function renderLeads() {
-  const q = (document.getElementById('leads-search').value || '').toLowerCase();
-  let rows = DATA.leads;
-  if (leadsFilter !== 'all') rows = rows.filter(r => r.role === leadsFilter);
-  if (q) rows = rows.filter(r =>
-    (r.name+r.city+r.state+r.category).toLowerCase().includes(q)
-  );
-
-  if (!rows.length) {
-    document.getElementById('leads-list').innerHTML =
-      '<div class="empty"><strong>No leads yet</strong>Run leadgen_v3.py to populate.</div>';
-    return;
-  }
-
-  document.getElementById('leads-list').innerHTML = rows.map(r => `
-    <div class="lead-card">
-      <div class="lead-name">${esc(r.name)}</div>
-      <div class="lead-meta">
-        <span class="role-${r.role}">${r.role.toUpperCase()}</span>
-        · ${esc(r.category)} · ${esc([r.city, r.state].filter(Boolean).join(', '))}
-        ${r.zip ? '· ' + r.zip : ''}
-      </div>
-      ${r.phone ? '<div class="lead-meta" style="margin-top:4px"><a href="tel:' + r.phone + '" style="color:var(--blue)">' + r.phone + '</a></div>' : ''}
-      ${r.website ? '<div class="lead-meta" style="margin-top:2px"><a href="' + r.website + '" target="_blank" style="color:var(--blue)" rel="noopener">' + r.website.replace(/^https?:\/\//,'') + '</a></div>' : ''}
-    </div>
-  `).join('');
-}
-
-function renderFeeds() {
-  const rows = DATA.feed_summary;
-  if (!rows.length) {
-    document.getElementById('feeds-tbody').innerHTML =
-      '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No feed data yet</td></tr>';
-    return;
-  }
-  document.getElementById('feeds-tbody').innerHTML = rows.map(r => {
-    const dotClass = r.status === 'matched' ? 'ok' : 'warn';
-    const scraped = r.last_scraped ? r.last_scraped.slice(0,16).replace('T',' ') + ' UTC' : '—';
-    return `<tr>
-      <td><span class="feed-dot ${dotClass}"></span>${r.source}</td>
-      <td>${r.status}</td>
-      <td>${r.count}</td>
-      <td>${scraped}</td>
-    </tr>`;
-  }).join('');
-}
-
-// Tab switching
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
   });
 });
-
-// Pipeline source filters
-document.querySelectorAll('[data-filter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    pipelineFilter = btn.dataset.filter;
-    renderPipeline();
-  });
-});
-
-// Leads role filters
-document.querySelectorAll('[data-lfilter]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('[data-lfilter]').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    leadsFilter = btn.dataset.lfilter;
-    renderLeads();
-  });
-});
-
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
+document.querySelectorAll('[data-sf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-sf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');supplyFilter=btn.dataset.sf;renderSupply();});});
+document.querySelectorAll('[data-bf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-bf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buyerFilter=btn.dataset.bf;renderBuyers();});});
+document.querySelectorAll('[data-mf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-mf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');matchFilter=btn.dataset.mf;renderMatched();});});
 loadData();
 </script>
 </body>
