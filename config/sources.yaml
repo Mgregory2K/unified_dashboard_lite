@@ -1,0 +1,63 @@
+categories:
+  restaurant_equipment:
+    label: "Restaurant Equipment"
+    keywords: ["ice machine", "commercial refrigerator", "walk-in cooler", "hood vent", "fryer", "griddle", "commercial oven", "prep table", "reach-in cooler", "steam table"]
+    min_price: 200
+    max_price: 15000
+    estimated_multiplier: 2.0
+    b2b: true
+    score_bonus: 15
+
+  generators:
+    label: "Generators"
+    keywords: ["generator", "genset", "standby generator", "diesel generator", "commercial generator"]
+    min_price: 500
+    max_price: 20000
+    estimated_multiplier: 1.8
+    b2b: true
+    score_bonus: 15
+
+  pressure_washers:
+    label: "Pressure Washers"
+    keywords: ["pressure washer", "power washer", "hot water pressure", "commercial pressure"]
+    min_price: 300
+    max_price: 8000
+    estimated_multiplier: 1.9
+    b2b: true
+    score_bonus: 10
+
+  pallet_racking:
+    label: "Pallet Racking"
+    keywords: ["pallet rack", "warehouse racking", "shelving system", "industrial shelving", "teardrop rack"]
+    min_price: 200
+    max_price: 10000
+    estimated_multiplier: 1.7
+    b2b: true
+    score_bonus: 15
+
+  floor_scrubbers:
+    label: "Floor Scrubbers"
+    keywords: ["floor scrubber", "floor cleaner", "auto scrubber", "ride-on scrubber", "tennant", "nilfisk"]
+    min_price: 500
+    max_price: 12000
+    estimated_multiplier: 2.1
+    b2b: true
+    score_bonus: 10
+
+  office_furniture:
+    label: "Office Furniture"
+    keywords: ["office furniture", "cubicles", "workstations", "conference table", "office chairs lot", "Herman Miller", "Steelcase"]
+    min_price: 300
+    max_price: 8000
+    estimated_multiplier: 1.6
+    b2b: false
+    score_bonus: 5
+
+  trailers:
+    label: "Trailers"
+    keywords: ["dump trailer", "flatbed trailer", "utility trailer", "equipment trailer", "gooseneck trailer"]
+    min_price: 1000
+    max_price: 25000
+    estimated_multiplier: 1.5
+    b2b: true
+    score_bonus: 10

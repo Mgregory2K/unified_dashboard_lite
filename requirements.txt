@@ -1,5 +1,9 @@
-﻿feedparser
+feedparser
 requests
 beautifulsoup4
 gspread
 google-auth
+google-auth-oauthlib
+requests-oauthlib
+cryptography
+PyYAML

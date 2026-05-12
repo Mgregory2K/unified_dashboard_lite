@@ -1,0 +1,42 @@
+# Primary market: St. Leon, IN (47012) centered on 45030 zip
+# 50-mile radius covers: Cincinnati, Dayton edge, Lexington edge,
+# Indianapolis edge, Louisville edge — solid commercial equipment corridor
+
+markets:
+  st_leon:
+    label: "St. Leon / Cincinnati Corridor"
+    center_zip: "45030"
+    center_lat: 39.1900
+    center_lng: -84.7697
+    radius_miles: 50
+    craigslist_subdomain: "cincinnati"
+    active: true
+    notes: "Primary market. Covers OH/IN/KY tri-state corridor."
+
+  dayton:
+    label: "Dayton, OH"
+    craigslist_subdomain: "dayton"
+    center_zip: "45402"
+    radius_miles: 40
+    active: false
+
+  lexington:
+    label: "Lexington, KY"
+    craigslist_subdomain: "lexington"
+    center_zip: "40507"
+    radius_miles: 40
+    active: false
+
+  indianapolis:
+    label: "Indianapolis, IN"
+    craigslist_subdomain: "indianapolis"
+    center_zip: "46201"
+    radius_miles: 40
+    active: false
+
+  louisville:
+    label: "Louisville, KY"
+    craigslist_subdomain: "louisville"
+    center_zip: "40202"
+    radius_miles: 40
+    active: false
