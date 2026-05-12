@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghost Scanner</title>
+<style>
+  :root {
+    --bg: #0e0f11;
+    --surface: #16181c;
+    --surface2: #1e2026;
+    --border: #2a2d35;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --green: #22c55e;
+    --green-dim: #14532d;
+    --amber: #f59e0b;
+    --amber-dim: #451a03;
+    --red: #ef4444;
+    --red-dim: #450a0a;
+    --blue: #3b82f6;
+    --blue-dim: #1e3a5f;
+    --font: 'DM Mono', 'Courier New', monospace;
+    --sans: 'DM Sans', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+  .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .nav { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; }
+  .nav-logo { padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .nav-logo span { font-family: var(--font); font-size: 13px; color: var(--green); letter-spacing: 0.1em; display: block; }
+  .nav-logo small { font-size: 10px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; color: var(--muted); cursor: pointer; border-left: 2px solid transparent; transition: all 0.15s; text-decoration: none; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--text); border-left-color: var(--green); background: var(--surface2); }
+  .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .nav-footer { margin-top: auto; padding: 16px 20px; border-top: 1px solid var(--border); }
+  .nav-footer small { font-size: 10px; color: var(--muted); display: block; font-family: var(--font); }
+  .main { padding: 28px 32px; overflow-y: auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .page-sub { font-size: 12px; color: var(--muted); margin-top: 2px; font-family: var(--font); }
+  .btn { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-green { background: var(--green); color: #000; }
+  .btn-green:hover { background: #16a34a; }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; font-family: var(--font); }
+  .stat-val { font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+  .stat-val.green { color: var(--green); }
+  .stat-val.amber { color: var(--amber); }
+  .stat-hint { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .table-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-title { font-size: 13px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 16px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); border-bottom: 1px solid var(--border); font-family: var(--font); font-weight: 400; }
+  td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: var(--font); letter-spacing: 0.04em; }
+  .badge-review { background: var(--green-dim); color: var(--green); }
+  .badge-watch { background: var(--amber-dim); color: var(--amber); }
+  .badge-pass { background: #1f2937; color: var(--muted); }
+  .badge-contacted { background: var(--blue-dim); color: var(--blue); }
+  .badge-continue { background: var(--green-dim); color: var(--green); }
+  .badge-kill { background: var(--red-dim); color: var(--red); }
+  .score-bar { display: flex; align-items: center; gap: 8px; }
+  .score-num { font-family: var(--font); font-size: 13px; min-width: 28px; }
+  .score-track { width: 60px; height: 4px; background: var(--border); border-radius: 2px; }
+  .score-fill { height: 100%; border-radius: 2px; }
+  .verdict { border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+  .verdict.continue { background: var(--green-dim); border: 1px solid #166534; }
+  .verdict.tuning { background: var(--amber-dim); border: 1px solid #92400e; }
+  .verdict.kill { background: var(--red-dim); border: 1px solid #7f1d1d; }
+  .verdict-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font); opacity: 0.7; margin-bottom: 4px; }
+  .verdict-text { font-size: 18px; font-weight: 700; }
+  .continue .verdict-text { color: var(--green); }
+  .tuning .verdict-text { color: var(--amber); }
+  .kill .verdict-text { color: var(--red); }
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .chart-box-title { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; font-family: var(--font); }
+  .run-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; max-width: 560px; }
+  .run-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .run-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+  .run-field { margin-bottom: 16px; }
+  .run-field label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 6px; font-family: var(--font); }
+  .run-field input, .run-field select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; color: var(--text); font-size: 13px; outline: none; }
+  .run-field input:focus, .run-field select:focus { border-color: var(--green); }
+  .run-log { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: var(--font); font-size: 12px; color: var(--green); min-height: 80px; margin-top: 16px; line-height: 1.8; white-space: pre-wrap; }
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .setting-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .setting-box-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+  .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-key { color: var(--muted); font-family: var(--font); font-size: 12px; }
+  .toggle { position: relative; width: 36px; height: 20px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 20px; cursor: pointer; transition: 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle-slider:before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+  .action-group { display: flex; gap: 6px; }
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty-icon { font-size: 32px; margin-bottom: 12px; }
+  .empty p { font-size: 13px; line-height: 1.7; }
+  @media (max-width: 768px) {
+    .shell { grid-template-columns: 1fr; }
+    .nav { flex-direction: row; padding: 0; border-right: none; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .nav-logo, .nav-footer { display: none; }
+    .nav-item { padding: 14px 16px; border-left: none; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .nav-item.active { border-bottom-color: var(--green); border-left-color: transparent; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .chart-grid, .settings-grid { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+  }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-logo">
+      <span>GHOST_SCANNER</span>
+      <small>v1 · Cincinnati Corridor</small>
+    </div>
+    <a class="nav-item active" onclick="showPage('dashboard');return false;" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('opportunities');return false;" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Opportunities
+    </a>
+    <a class="nav-item" onclick="showPage('weekly');return false;" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Weekly Analysis
+    </a>
+    <a class="nav-item" onclick="showPage('run');return false;" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Run Scanner
+    </a>
+    <a class="nav-item" onclick="showPage('settings');return false;" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Settings
+    </a>
+    <div class="nav-footer">
+      <small>github.com/Mgregory2K</small>
+      <small style="margin-top:4px;">unified_dashboard_lite</small>
+    </div>
+  </nav>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">St. Leon · 45030 · 50mi radius · Last run: <span id="last-run">never</span></div>
+        </div>
+        <button class="btn btn-green btn-sm" onclick="showPage('run')">▶ Run Now</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-label">Total Scanned</div><div class="stat-val" id="stat-total">—</div><div class="stat-hint">this week</div></div>
+        <div class="stat"><div class="stat-label">High Signal</div><div class="stat-val green" id="stat-review">—</div><div class="stat-hint">score ≥ 65</div></div>
+        <div class="stat"><div class="stat-label">Best Spread</div><div class="stat-val amber" id="stat-spread">—</div><div class="stat-hint">possible profit</div></div>
+        <div class="stat"><div class="stat-label">System Status</div><div class="stat-val green">LIVE</div><div class="stat-hint">daily at 7am ET</div></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header">
+          <span class="table-title">Today's Top Opportunities</span>
+          <button class="btn btn-outline btn-sm" onclick="showPage('opportunities')">View All →</button>
+        </div>
+        <table>
+          <thead><tr><th>Item</th><th>Ask</th><th>Spread</th><th>Score</th><th>Status</th></tr></thead>
+          <tbody id="dash-table"><tr><td colspan="5" class="empty"><div class="empty-icon">◎</div><p>No data yet. Run the scanner or wait for 7am ET.</p></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- OPPORTUNITIES -->
+    <div class="page" id="page-opportunities">
+      <div class="page-header">
+        <div><div class="page-title">Opportunities</div><div class="page-sub">All flagged items · Mark decisions below</div></div>
+        <div style="display:flex;gap:8px;">
+          <select id="filter-status" onchange="renderOpps()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:12px;outline:none;">
+            <option value="all">All Statuses</option>
+            <option value="review">Review</option>
+            <option value="watch">Watch</option>
+            <option value="contacted">Contacted</option>
+            <option value="pass">Pass</option>
+          </select>
+          <select id="filter-cat" onchange="renderOpps()" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:12px;outline:none;">
+            <option value="all">All Categories</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Category</th><th>Ask</th><th>Est. Resale</th><th>Spread</th><th>Score</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="opps-table"><tr><td colspan="8" class="empty"><div class="empty-icon">◎</div><p>No opportunities loaded yet.</p></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WEEKLY -->
+    <div class="page" id="page-weekly">
+      <div class="page-header">
+        <div><div class="page-title">Weekly Analysis</div><div class="page-sub">Auto-generated every Sunday · Kill or continue signal</div></div>
+      </div>
+      <div class="verdict continue" id="verdict-banner">
+        <div><div class="verdict-label">System Verdict</div><div class="verdict-text" id="verdict-text">AWAITING DATA</div></div>
+        <div style="text-align:right;"><div style="font-size:11px;color:var(--muted);font-family:var(--font);">Week ending</div><div style="font-size:13px;margin-top:2px;" id="verdict-date">—</div></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-box"><div class="chart-box-title">Opportunities by Day</div><canvas id="chart-daily" height="140"></canvas></div>
+        <div class="chart-box"><div class="chart-box-title">Category Breakdown</div><canvas id="chart-cats" height="140"></canvas></div>
+      </div>
+      <div class="table-wrap">
+        <div class="table-header"><span class="table-title">Week Signals</span></div>
+        <table><thead><tr><th>Signal</th><th>Type</th></tr></thead><tbody id="signals-table"><tr><td colspan="2" class="empty"><p>Run the scanner for a week to see signals.</p></td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- RUN -->
+    <div class="page" id="page-run">
+      <div class="page-header"><div><div class="page-title">Run Scanner</div><div class="page-sub">Trigger manually via GitHub Actions</div></div></div>
+      <div class="run-panel">
+        <div class="run-title">Trigger a Scan Run</div>
+        <div class="run-sub">Fires the GitHub Actions workflow in your repo. Runs in GitHub's cloud. Results in your email in ~3 minutes. No local machine needed.</div>
+        <div class="run-field"><label>GitHub Personal Access Token</label><input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" oninput="saveToken()"></div>
+        <div class="run-field">
+          <label>Market</label>
+          <select id="run-market">
+            <option value="st_leon">St. Leon / Cincinnati Corridor (45030 · 50mi)</option>
+            <option value="dayton">Dayton, OH</option>
+            <option value="lexington">Lexington, KY</option>
+            <option value="indianapolis">Indianapolis, IN</option>
+            <option value="louisville">Louisville, KY</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:4px;">
+          <button class="btn btn-green" onclick="triggerScan()">▶ Trigger Scan</button>
+          <button class="btn btn-outline" onclick="checkStatus()">Check Status</button>
+        </div>
+        <div class="run-log" id="run-log">// ready. enter token and hit trigger.</div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.7;">
+          <strong style="color:var(--text);">Get a token:</strong> github.com → Settings → Developer settings → Personal access tokens → Classic<br>
+          Scopes needed: <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:11px;">repo, workflow</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Market config · Scoring · Kill criteria</div></div></div>
+      <div class="settings-grid">
+        <div class="setting-box">
+          <div class="setting-box-title">Active Market</div>
+          <div class="setting-row"><span class="setting-key">center_zip</span><span>45030</span></div>
+          <div class="setting-row"><span class="setting-key">radius_miles</span><span>50</span></div>
+          <div class="setting-row"><span class="setting-key">craigslist_sub</span><span>cincinnati</span></div>
+          <div class="setting-row"><span class="setting-key">coverage</span><span>OH / IN / KY</span></div>
+        </div>
+        <div class="setting-box">
+          <div class="setting-box-title">Schedule</div>
+          <div class="setting-row"><span class="setting-key">daily_scan</span><span>7:00 AM ET</span></div>
+          <div class="setting-row"><span class="setting-key">weekly_report</span><span>Sunday 8:00 AM ET</span></div>
+          <div class="setting-row"><span class="setting-key">platform</span><span>GitHub Actions</span></div>
+          <div class="setting-row"><span class="setting-key">cost</span><span style="color:var(--green);">$0 / month</span></div>
+        </div>
+        <div class="setting-box">
+          <div class="setting-box-title">Scoring Thresholds</div>
+          <div class="setting-row"><span class="setting-key">review_floor</span><span style="color:var(--green);">65</span></div>
+          <div class="setting-row"><span class="setting-key">watch_floor</span><span style="color:var(--amber);">45</span></div>
+          <div class="setting-row"><span class="setting-key">min_spread</span><span>$300</span></div>
+          <div class="setting-row"><span class="setting-key">high_ticket</span><span>$2,000+</span></div>
+        </div>
+        <div class="setting-box">
+          <div class="setting-box-title">Kill Criteria</div>
+          <div class="setting-row"><span class="setting-key">spread_floor</span><span>$300</span></div>
+          <div class="setting-row"><span class="setting-key">eval_window</span><span>2–3 weeks</span></div>
+          <div class="setting-row"><span class="setting-key">repo</span><span style="font-size:11px;font-family:var(--font);">Mgregory2K/unified_dashboard_lite</span></div>
+        </div>
+        <div class="setting-box">
+          <div class="setting-box-title">Active Categories</div>
+          <div class="setting-row"><span class="setting-key">restaurant_equipment</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">generators</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">pressure_washers</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">pallet_racking</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">floor_scrubbers</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">trailers</span><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="setting-box">
+          <div class="setting-box-title">Expand Markets</div>
+          <div class="setting-row"><span class="setting-key">dayton_oh</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">lexington_ky</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">indianapolis_in</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div class="setting-row"><span class="setting-key">louisville_ky</span><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+          <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6;">Toggle on = update markets.yaml and commit. Expansion is free.</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const REPO = 'Mgregory2K/unified_dashboard_lite';
+const GH_API = 'https://api.github.com';
+const WORKFLOW = 'daily_scan.yml';
+
+let state = {
+  opportunities: JSON.parse(localStorage.getItem('ghost_opps') || '[]'),
+  decisions: JSON.parse(localStorage.getItem('ghost_decisions') || '{}'),
+  lastRun: localStorage.getItem('ghost_last_run') || null,
+};
+
+function saveState() {
+  localStorage.setItem('ghost_opps', JSON.stringify(state.opportunities));
+  localStorage.setItem('ghost_decisions', JSON.stringify(state.decisions));
+  if (state.lastRun) localStorage.setItem('ghost_last_run', state.lastRun);
+}
+
+function saveToken() {
+  localStorage.setItem('ghost_token', document.getElementById('gh-token').value);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if ((n.getAttribute('onclick') || '').includes("'" + id + "'")) n.classList.add('active');
+  });
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'opportunities') renderOpps();
+  if (id === 'weekly') renderWeekly();
+}
+
+function loadDemoData() {
+  if (state.opportunities.length > 0) return;
+  state.opportunities = [
+    { id:1, title:'Commercial Ice Machine — Norwood', category:'restaurant_equipment', asking_price:650, estimated_low:1190, estimated_high:1610, spread_low:540, spread_high:960, score:82, status:'review', url:'#', location:'Norwood, OH', risk_flags:'', day:0 },
+    { id:2, title:'Pallet Racking Lot — Florence KY', category:'pallet_racking', asking_price:1200, estimated_low:1836, estimated_high:2484, spread_low:636, spread_high:1284, score:76, status:'review', url:'#', location:'Florence, KY', risk_flags:'', day:1 },
+    { id:3, title:'Walk-In Cooler Panels — Covington', category:'restaurant_equipment', asking_price:800, estimated_low:1360, estimated_high:1840, spread_low:560, spread_high:1040, score:74, status:'review', url:'#', location:'Covington, KY', risk_flags:'', day:1 },
+    { id:4, title:'Honda 10kW Generator — Lawrenceburg IN', category:'generators', asking_price:1400, estimated_low:2142, estimated_high:2898, spread_low:742, spread_high:1498, score:71, status:'watch', url:'#', location:'Lawrenceburg, IN', risk_flags:'', day:2 },
+    { id:5, title:'Tennant Floor Scrubber — Hamilton OH', category:'floor_scrubbers', asking_price:900, estimated_low:1638, estimated_high:2214, spread_low:738, spread_high:1314, score:68, status:'watch', url:'#', location:'Hamilton, OH', risk_flags:'condition concern', day:3 },
+    { id:6, title:'Hot/Cold Pressure Washer — Mason OH', category:'pressure_washers', asking_price:750, estimated_low:1211, estimated_high:1639, spread_low:461, spread_high:889, score:65, status:'watch', url:'#', location:'Mason, OH', risk_flags:'', day:4 },
+    { id:7, title:'14ft Dump Trailer — Batavia OH', category:'trailers', asking_price:3200, estimated_low:4320, estimated_high:5840, spread_low:1120, spread_high:2640, score:79, status:'review', url:'#', location:'Batavia, OH', risk_flags:'', day:5 },
+    { id:8, title:'Office Cubicles Lot x18 — Blue Ash', category:'office_furniture', asking_price:400, estimated_low:544, estimated_high:736, spread_low:144, spread_high:336, score:48, status:'watch', url:'#', location:'Blue Ash, OH', risk_flags:'low spread', day:6 },
+  ];
+  state.lastRun = new Date().toISOString();
+  saveState();
+}
+
+function fmt(n) { return (n||0).toLocaleString(); }
+
+function renderDashboard() {
+  const opps = state.opportunities.map(o => ({...o, status: state.decisions[o.id] || o.status}));
+  const reviews = opps.filter(o => o.status === 'review');
+  const bestSpread = opps.length ? Math.max(...opps.map(o => o.spread_low||0)) : 0;
+  document.getElementById('stat-total').textContent = opps.length || '—';
+  document.getElementById('stat-review').textContent = reviews.length || '—';
+  document.getElementById('stat-spread').textContent = bestSpread > 0 ? '$' + fmt(bestSpread) : '—';
+  document.getElementById('last-run').textContent = state.lastRun ? new Date(state.lastRun).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : 'never';
+  const top5 = opps.slice(0,5);
+  if (!top5.length) return;
+  document.getElementById('dash-table').innerHTML = top5.map(o => `
+    <tr>
+      <td><a href="${o.url}" style="color:var(--text);text-decoration:none;">${o.title}</a><br><span style="font-size:11px;color:var(--muted);">${o.location}</span></td>
+      <td style="font-family:var(--font);">$${fmt(o.asking_price)}</td>
+      <td style="font-family:var(--font);color:var(--green);">$${fmt(o.spread_low)}–$${fmt(o.spread_high)}</td>
+      <td><div class="score-bar"><span class="score-num">${o.score}</span><div class="score-track"><div class="score-fill" style="width:${Math.min(o.score,100)}%;background:${o.score>=65?'var(--green)':o.score>=45?'var(--amber)':'var(--red)'};"></div></div></div></td>
+      <td><span class="badge badge-${o.status}">${o.status.toUpperCase()}</span></td>
+    </tr>`).join('');
+}
+
+function renderOpps() {
+  const sf = document.getElementById('filter-status').value;
+  const cf = document.getElementById('filter-cat').value;
+  const cats = [...new Set(state.opportunities.map(o => o.category))];
+  const catSel = document.getElementById('filter-cat');
+  if (catSel.options.length <= 1) cats.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase()); catSel.appendChild(o); });
+  let opps = state.opportunities.map(o => ({...o, status: state.decisions[o.id]||o.status}));
+  if (sf !== 'all') opps = opps.filter(o => o.status === sf);
+  if (cf !== 'all') opps = opps.filter(o => o.category === cf);
+  if (!opps.length) { document.getElementById('opps-table').innerHTML = '<tr><td colspan="8" class="empty"><p>No items match this filter.</p></td></tr>'; return; }
+  document.getElementById('opps-table').innerHTML = opps.map(o => `
+    <tr>
+      <td><a href="${o.url}" target="_blank" style="color:var(--text);text-decoration:none;">${o.title}</a><br><span style="font-size:11px;color:var(--muted);">${o.location}</span>${o.risk_flags?'<br><span style="font-size:10px;color:var(--red);">⚠ '+o.risk_flags+'</span>':''}</td>
+      <td style="font-size:12px;">${(o.category||'').replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())}</td>
+      <td style="font-family:var(--font);">$${fmt(o.asking_price)}</td>
+      <td style="font-family:var(--font);font-size:12px;color:var(--muted);">$${fmt(o.estimated_low)}–$${fmt(o.estimated_high)}</td>
+      <td style="font-family:var(--font);color:var(--green);">$${fmt(o.spread_low)}–$${fmt(o.spread_high)}</td>
+      <td><div class="score-bar"><span class="score-num">${o.score}</span><div class="score-track"><div class="score-fill" style="width:${Math.min(o.score,100)}%;background:${o.score>=65?'var(--green)':o.score>=45?'var(--amber)':'var(--red)'};"></div></div></div></td>
+      <td><span class="badge badge-${o.status}">${o.status.toUpperCase()}</span></td>
+      <td><div class="action-group">
+        <button class="btn btn-outline btn-sm" onclick="setDecision(${o.id},'review')" style="color:var(--green);" title="Review">✓</button>
+        <button class="btn btn-outline btn-sm" onclick="setDecision(${o.id},'contacted')" style="color:var(--blue);" title="Contacted">📞</button>
+        <button class="btn btn-outline btn-sm" onclick="setDecision(${o.id},'pass')" style="color:var(--muted);" title="Pass">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function setDecision(id, status) {
+  state.decisions[id] = status;
+  saveState();
+  renderOpps();
+  renderDashboard();
+}
+
+let chartDaily, chartCats;
+function renderWeekly() {
+  const opps = state.opportunities;
+  if (!opps.length) return;
+  const reviews = opps.filter(o => (state.decisions[o.id]||o.status) === 'review').length;
+  const maxSpread = Math.max(...opps.map(o => o.spread_low||0));
+  let verdict = 'CONTINUE', vClass = 'continue';
+  if (maxSpread < 300) { verdict = 'NEEDS TUNING'; vClass = 'tuning'; }
+  if (reviews === 0 && maxSpread < 200) { verdict = 'KILL — reassess'; vClass = 'kill'; }
+  const banner = document.getElementById('verdict-banner');
+  banner.className = 'verdict ' + vClass;
+  document.getElementById('verdict-text').textContent = verdict;
+  document.getElementById('verdict-date').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const signals = [
+    { text: reviews + ' high-signal items this week', type: reviews > 0 ? 'continue' : 'kill' },
+    { text: 'Best spread: $' + fmt(maxSpread), type: maxSpread >= 300 ? 'continue' : 'kill' },
+    { text: opps.length + ' total items scanned', type: opps.length >= 10 ? 'continue' : 'kill' },
+    { text: 'Scanner running on schedule — 7am ET daily', type: 'continue' },
+    { text: 'Zero inventory held — no capital at risk during scan phase', type: 'continue' },
+  ];
+  document.getElementById('signals-table').innerHTML = signals.map(s =>
+    `<tr><td>${s.text}</td><td><span class="badge badge-${s.type === 'continue' ? 'review' : 'pass'}">${s.type.toUpperCase()}</span></td></tr>`
+  ).join('');
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const dayCounts = days.map((_,i) => opps.filter(o => o.day === i).length);
+  if (chartDaily) chartDaily.destroy();
+  chartDaily = new Chart(document.getElementById('chart-daily'), {
+    type: 'bar',
+    data: { labels: days, datasets: [{ data: dayCounts, backgroundColor: '#22c55e33', borderColor: '#22c55e', borderWidth: 1, borderRadius: 4 }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color:'#6b7280', font:{size:11} }, grid: { color:'#2a2d35' } }, y: { ticks: { color:'#6b7280', font:{size:11}, stepSize:1 }, grid: { color:'#2a2d35' } } } }
+  });
+
+  const catMap = {};
+  opps.forEach(o => { catMap[o.category] = (catMap[o.category]||0)+1; });
+  if (chartCats) chartCats.destroy();
+  chartCats = new Chart(document.getElementById('chart-cats'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(catMap).map(c=>c.replace(/_/g,' ').replace(/\b\w/g,l=>l.toUpperCase())), datasets: [{ data: Object.values(catMap), backgroundColor: ['#22c55e','#f59e0b','#3b82f6','#a78bfa','#f97316','#ec4899','#14b8a6'], borderWidth: 0 }] },
+    options: { plugins: { legend: { position:'right', labels: { color:'#6b7280', font:{size:11}, boxWidth:12, padding:10 } } } }
+  });
+}
+
+async function triggerScan() {
+  const token = localStorage.getItem('ghost_token') || document.getElementById('gh-token').value;
+  const market = document.getElementById('run-market').value;
+  const log = document.getElementById('run-log');
+  if (!token) { log.textContent = '// error: no token. enter your github personal access token above.'; return; }
+  log.textContent = '// triggering scan...\n// market: ' + market + '\n// repo: ' + REPO;
+  try {
+    const res = await fetch(`${GH_API}/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main', inputs: {} })
+    });
+    if (res.status === 204) {
+      log.textContent = '// ✓ scan triggered\n// market: ' + market + '\n// check: github.com/' + REPO + '/actions\n// results in your email in ~3 minutes';
+      state.lastRun = new Date().toISOString();
+      saveState();
+    } else {
+      const err = await res.json();
+      log.textContent = '// error ' + res.status + ': ' + (err.message || JSON.stringify(err));
+    }
+  } catch(e) { log.textContent = '// network error: ' + e.message; }
+}
+
+async function checkStatus() {
+  const token = localStorage.getItem('ghost_token') || document.getElementById('gh-token').value;
+  const log = document.getElementById('run-log');
+  if (!token) { log.textContent = '// enter token to check status'; return; }
+  log.textContent = '// checking last run...';
+  try {
+    const res = await fetch(`${GH_API}/repos/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=1`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/vnd.github+json' }
+    });
+    const data = await res.json();
+    const run = data.workflow_runs?.[0];
+    if (run) {
+      log.textContent = `// last run: ${run.status} · ${run.conclusion||'in progress'}\n// started: ${new Date(run.created_at).toLocaleString()}\n// url: ${run.html_url}`;
+    } else {
+      log.textContent = '// no runs found yet. trigger a scan first.';
+    }
+  } catch(e) { log.textContent = '// error: ' + e.message; }
+}
+
+document.getElementById('gh-token').value = localStorage.getItem('ghost_token') || '';
+loadDemoData();
+renderDashboard();
+</script>
+</body>
+</html>
