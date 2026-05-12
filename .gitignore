@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.pyc
+opportunity_os.db
+*.bak
+files_claude_*/
+files_claude_*.zip
