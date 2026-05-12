@@ -1,12 +1,16 @@
 """
-matcher.py — Green Gregory Group Opportunity OS  Phase 4
-New: sell_est, match_reason, next_action, is_seed flag, assembly_opps table
+matcher.py — Green Gregory Group Opportunity OS  Phase 7A (hotfix)
+Changes vs Phase 4:
+  - load_config() is now defensive: merges missing sections from built-in defaults
+  - Never crashes on KeyError for buyer_profiles, scoring, or any other key
+  - Logs a warning if config.json is partial or missing expected sections
+  - sources_config pulled from cfg.get("sources_config") or cfg.get("sources") or []
+  - All other logic unchanged from Phase 4
 """
 
 import sqlite3, json, argparse, logging, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
-from config_reader import load_config
 
 DB_PATH = Path("opportunity_os.db")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -28,6 +32,132 @@ CREATE TABLE IF NOT EXISTS assembly_opps (
     confidence INTEGER, next_action TEXT, is_seed INTEGER DEFAULT 0, created_at TEXT
 );
 """
+
+# ── Built-in defaults (used when config.json is missing or partial) ───────────
+
+DEFAULT_BUYER_PROFILES = [
+    {
+        "id": "buyer_network_it",
+        "name": "IT Resellers / eBay / NetworkHardware",
+        "keywords": ["cisco", "juniper", "switch", "router", "firewall",
+                     "network", "server", "rack", "sfp", "access point",
+                     "wifi", "wireless", "telecom"],
+        "max_buy_price": 5000,
+        "target_margin": 0.40,
+        "score_weight": 25,
+        "notes": "High velocity on eBay. Cisco and Juniper move fastest.",
+        "active": True,
+    },
+    {
+        "id": "buyer_pallet_lots",
+        "name": "Amazon FBA / Liquidators",
+        "keywords": ["pallet", "lot", "bulk", "liquidation", "surplus",
+                     "overstock", "wholesale", "racking", "shelving"],
+        "max_buy_price": 3000,
+        "target_margin": 0.50,
+        "score_weight": 20,
+        "notes": "Pallet lots can 3x if you know the manifest.",
+        "active": True,
+    },
+    {
+        "id": "buyer_industrial",
+        "name": "Industrial Equipment Dealers",
+        "keywords": ["forklift", "generator", "compressor", "pump", "hvac",
+                     "industrial", "machinery", "scrubber", "pressure washer"],
+        "max_buy_price": 15000,
+        "target_margin": 0.30,
+        "score_weight": 20,
+        "notes": "Larger ticket. Slower turn but higher margin dollars.",
+        "active": True,
+    },
+    {
+        "id": "buyer_office",
+        "name": "Office Liquidators / Facebook Marketplace",
+        "keywords": ["desk", "chair", "furniture", "office", "cubicle",
+                     "copier", "printer", "monitor"],
+        "max_buy_price": 1500,
+        "target_margin": 0.45,
+        "score_weight": 15,
+        "notes": "Local pickup plays well. Quick flip in metro areas.",
+        "active": True,
+    },
+    {
+        "id": "buyer_food_equip",
+        "name": "Restaurant Equipment Dealers / eBay",
+        "keywords": ["ice machine", "refrigerator", "freezer", "fryer",
+                     "commercial kitchen", "cafeteria", "food service"],
+        "max_buy_price": 3000,
+        "target_margin": 0.45,
+        "score_weight": 25,
+        "notes": "Manitowoc / Hoshizaki ice machines flip 2-3x.",
+        "active": True,
+    },
+]
+
+DEFAULT_SCORING = {
+    "min_score_match":    40,
+    "min_score_alert":    40,
+    "price_boost_low":    20,
+    "price_boost_mid":    10,
+    "over_budget_penalty": 15,
+    "score_cap":          100,
+}
+
+CONFIG_PATH = Path("config.json")
+
+
+# ── Defensive config loader ───────────────────────────────────────────────────
+
+def load_config(path: Path = CONFIG_PATH) -> dict:
+    """
+    Load config.json and merge any missing sections from built-in defaults.
+    Never raises KeyError — always returns a dict with buyer_profiles and scoring.
+
+    Priority:
+      1. config.json on disk (written by config_reader.py)
+      2. Built-in defaults for any missing keys
+    """
+    cfg = {}
+
+    if path.exists():
+        try:
+            with open(path, encoding="utf-8") as f:
+                cfg = json.load(f)
+            log.info(f"Loaded config from {path}")
+        except Exception as e:
+            log.warning(f"Could not parse {path}: {e} — using built-in defaults")
+            cfg = {}
+    else:
+        log.warning(f"config.json not found at {path} — using built-in defaults")
+
+    # Validate and fill missing sections
+    missing = []
+
+    if not cfg.get("buyer_profiles"):
+        cfg["buyer_profiles"] = DEFAULT_BUYER_PROFILES
+        missing.append("buyer_profiles")
+
+    if not cfg.get("scoring"):
+        cfg["scoring"] = dict(DEFAULT_SCORING)
+        missing.append("scoring")
+    else:
+        # Merge any missing scoring keys from defaults
+        for k, v in DEFAULT_SCORING.items():
+            cfg["scoring"].setdefault(k, v)
+
+    # sources_config: accept either key name from config.json or sources_config.json
+    if not cfg.get("sources_config") and not cfg.get("sources"):
+        cfg["sources_config"] = []
+        missing.append("sources_config")
+
+    if missing:
+        log.warning(
+            f"config.json was missing sections: {missing} — "
+            f"filled from built-in defaults. Run config_reader.py to fix."
+        )
+
+    return cfg
+
 
 # ── Assembly templates ────────────────────────────────────────────────────────
 ASSEMBLY_TEMPLATES = [
@@ -104,8 +234,8 @@ def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.executescript(MATCH_SCHEMA)
-    for col, typedef in [("sell_est","REAL"),("match_reason","TEXT"),
-                          ("next_action","TEXT"),("is_seed","INTEGER DEFAULT 0")]:
+    for col, typedef in [("sell_est", "REAL"), ("match_reason", "TEXT"),
+                          ("next_action", "TEXT"), ("is_seed", "INTEGER DEFAULT 0")]:
         try:
             conn.execute(f"ALTER TABLE matches ADD COLUMN {col} {typedef}")
         except sqlite3.OperationalError:
@@ -123,7 +253,10 @@ def derive_match_reason(hits, profile, score, price_est) -> str:
     parts  = [f"Keywords matched: {kw_str}."]
     if price_est and price_est <= profile["max_buy_price"]:
         pct = price_est / profile["max_buy_price"] * 100
-        parts.append(f"Price ${price_est:,.0f} is {pct:.0f}% of your ${profile['max_buy_price']:,.0f} ceiling — leaves room for margin.")
+        parts.append(
+            f"Price ${price_est:,.0f} is {pct:.0f}% of your "
+            f"${profile['max_buy_price']:,.0f} ceiling — leaves room for margin."
+        )
     if score >= 80:
         parts.append("Strong confidence — multiple distinct signals hit.")
     elif score >= 60:
@@ -203,7 +336,9 @@ def detect_assembly(conn, listings, dry_run=False) -> int:
                 any_seed = True
         if not hit_ids:
             continue
-        opp_id = hashlib.sha256((tmpl["id"] + "|".join(sorted(hit_ids))).encode()).hexdigest()[:16]
+        opp_id = hashlib.sha256(
+            (tmpl["id"] + "|".join(sorted(hit_ids))).encode()
+        ).hexdigest()[:16]
         if conn.execute("SELECT id FROM assembly_opps WHERE id=?", (opp_id,)).fetchone():
             continue
         rev = total_buy * tmpl["revenue_multiple"]
@@ -232,8 +367,10 @@ def detect_assembly(conn, listings, dry_run=False) -> int:
 
 def run_matching(conn, profiles, scoring, dry_run=False) -> dict:
     min_score = scoring["min_score_match"]
-    listings  = conn.execute("SELECT * FROM raw_listings WHERE status='new' ORDER BY scraped_at DESC").fetchall()
-    active    = [p for p in profiles if p.get("active", True)]
+    listings  = conn.execute(
+        "SELECT * FROM raw_listings WHERE status='new' ORDER BY scraped_at DESC"
+    ).fetchall()
+    active = [p for p in profiles if p.get("active", True)]
     log.info(f"  New listings: {len(listings)}  Buyer profiles: {len(active)}  Min score: {min_score}")
 
     n_new = 0
@@ -265,15 +402,16 @@ def run_matching(conn, profiles, scoring, dry_run=False) -> dict:
     all_listings = conn.execute("SELECT * FROM raw_listings").fetchall()
     n_asm = detect_assembly(conn, all_listings, dry_run)
     n_hot = conn.execute("SELECT COUNT(*) FROM matches WHERE status='hot'").fetchone()[0]
-    return {"listings_read": len(listings), "matches_created": n_new, "hot_count": n_hot, "assembly_opps": n_asm}
+    return {"listings_read": len(listings), "matches_created": n_new,
+            "hot_count": n_hot, "assembly_opps": n_asm}
 
 
 def print_hot_board(conn, limit=25):
     rows = conn.execute("""
-        SELECT m.score,m.buyer_name,m.price_est,m.sell_est,m.profit_est,m.is_seed,
-               r.title,r.source,r.location
+        SELECT m.score, m.buyer_name, m.price_est, m.sell_est, m.profit_est, m.is_seed,
+               r.title, r.source, r.location
         FROM matches m JOIN raw_listings r ON r.id=m.listing_id
-        WHERE m.status='hot' ORDER BY m.score DESC,m.profit_est DESC LIMIT ?
+        WHERE m.status='hot' ORDER BY m.score DESC, m.profit_est DESC LIMIT ?
     """, (limit,)).fetchall()
     n_hot = conn.execute("SELECT COUNT(*) FROM matches WHERE status='hot'").fetchone()[0]
     n_asm = conn.execute("SELECT COUNT(*) FROM assembly_opps").fetchone()[0]
@@ -282,15 +420,19 @@ def print_hot_board(conn, limit=25):
     print(f"{'═'*105}")
     if not rows:
         print("  (no matches — run scanner.py --seed-test-data then matcher.py)")
-        print(f"{'═'*105}\n"); return
+        print(f"{'═'*105}\n")
+        return
     print(f"  {'SCR':>3}  {'TITLE':<40}  {'SOURCE':<13}  {'BUY':>8}  {'SELL EST':>9}  {'PROFIT':>8}  BUYER")
     print(f"{'─'*105}")
     for r in rows:
         stag = " [SEED]" if r["is_seed"] else ""
         bs = f"${r['price_est']:>6,.0f}"  if r["price_est"]  else "     N/A"
-        ss = f"${r['sell_est']:>7,.0f}" if r["sell_est"]   else "      N/A"
+        ss = f"${r['sell_est']:>7,.0f}"   if r["sell_est"]   else "      N/A"
         ps = f"${r['profit_est']:>6,.0f}" if r["profit_est"] else "     N/A"
-        print(f"  {r['score']:3d}  {(r['title'] or '')[:40]:<40}  {r['source']:<13}  {bs}  {ss}  {ps}  {r['buyer_name'][:22]}{stag}")
+        print(
+            f"  {r['score']:3d}  {(r['title'] or '')[:40]:<40}  "
+            f"{r['source']:<13}  {bs}  {ss}  {ps}  {r['buyer_name'][:22]}{stag}"
+        )
     print(f"{'═'*105}\n")
 
 
@@ -301,19 +443,34 @@ def main():
     parser.add_argument("--board",     action="store_true")
     args = parser.parse_args()
 
-    cfg = load_config(); profiles = cfg["buyer_profiles"]; scoring = cfg["scoring"]
-    if args.min_score: scoring["min_score_match"] = args.min_score
+    # Defensive load — never crashes on missing keys
+    cfg      = load_config()
+    profiles = cfg.get("buyer_profiles") or DEFAULT_BUYER_PROFILES
+    scoring  = cfg.get("scoring")        or dict(DEFAULT_SCORING)
+
+    # Merge any missing scoring keys from defaults
+    for k, v in DEFAULT_SCORING.items():
+        scoring.setdefault(k, v)
+
+    if args.min_score:
+        scoring["min_score_match"] = args.min_score
 
     conn = get_db()
     if args.board:
-        print_hot_board(conn); conn.close(); return
+        print_hot_board(conn)
+        conn.close()
+        return
 
     stats = run_matching(conn, profiles, scoring, args.dry_run)
-    print(f"\n── Summary ──\n  Listings read:   {stats['listings_read']}\n"
-          f"  Matches created: {stats['matches_created']}\n"
-          f"  Hot total:       {stats['hot_count']}\n"
-          f"  Assembly opps:   {stats['assembly_opps']}\n")
-    print_hot_board(conn); conn.close()
+    print(
+        f"\n── Summary ──\n"
+        f"  Listings read:   {stats['listings_read']}\n"
+        f"  Matches created: {stats['matches_created']}\n"
+        f"  Hot total:       {stats['hot_count']}\n"
+        f"  Assembly opps:   {stats['assembly_opps']}\n"
+    )
+    print_hot_board(conn)
+    conn.close()
 
 if __name__ == "__main__":
     main()

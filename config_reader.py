@@ -486,6 +486,25 @@ def seed_config_tabs(spreadsheet):
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+def _print_config_summary(config: dict):
+    """Print validation summary — called after every successful config write."""
+    bp    = config.get("buyer_profiles", [])
+    sc    = config.get("scoring", {})
+    mkts  = config.get("markets", [])
+    lp    = config.get("leadgen_profiles", [])
+    kws   = config.get("search_criteria", {}).get("keywords", [])
+    print(f"  buyer_profiles    : {len(bp)} profiles")
+    print(f"  scoring keys      : {list(sc.keys())}")
+    print(f"  markets           : {len(mkts)} entries")
+    print(f"  leadgen_profiles  : {len(lp)} profiles")
+    print(f"  keywords          : {len(kws)}")
+    print(f"  wrote             : {CONFIG_PATH.resolve()}")
+    # Warn if critical keys are missing
+    for key in ("buyer_profiles", "scoring", "markets"):
+        if not config.get(key):
+            log.warning(f"  WARNING: '{key}' is empty — matcher.py will use built-in defaults")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Green Gregory config reader")
     parser.add_argument("--dry-run",  action="store_true", help="Print config, don't write file")
@@ -521,11 +540,9 @@ def main():
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2)
+
     log.info(f"Config written to {CONFIG_PATH.resolve()}")
-    log.info(f"  Markets:          {len(config['markets'])} active")
-    log.info(f"  Buyer profiles:   {len(config['buyer_profiles'])} active")
-    log.info(f"  Leadgen profiles: {len(config['leadgen_profiles'])} active")
-    log.info(f"  Keywords:         {len(config['search_criteria']['keywords'])}")
+    _print_config_summary(config)
 
 
 if __name__ == "__main__":
