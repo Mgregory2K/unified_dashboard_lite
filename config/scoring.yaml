@@ -1,0 +1,26 @@
+scoring:
+  weights:
+    urgency_language: 20
+    commercial_b2b: 15
+    price_below_comp: 25
+    repeatable_category: 15
+    local_pickup_friction: 10
+    high_ticket_value: 10
+    clear_contact: 5
+
+  penalties:
+    thin_margin: -25
+    missing_price: -10
+    consumer_only: -15
+    fragile_scammy: -20
+    negative_condition: -20
+
+  thresholds:
+    review: 65
+    watch: 45
+    pass: 0
+
+  min_spread_dollars: 300
+  min_price: 150
+  high_ticket_threshold: 2000
+  digest_max_items: 20

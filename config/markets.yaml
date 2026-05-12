@@ -1,0 +1,16 @@
+markets:
+  cincinnati:
+    label: "Cincinnati, OH"
+    craigslist_subdomain: "cincinnati"
+    radius_miles: 75
+    active: true
+  dayton:
+    label: "Dayton, OH"
+    craigslist_subdomain: "dayton"
+    radius_miles: 50
+    active: false
+  lexington:
+    label: "Lexington, KY"
+    craigslist_subdomain: "lexington"
+    radius_miles: 50
+    active: false
