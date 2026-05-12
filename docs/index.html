@@ -3,382 +3,1489 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Green Gregory OS</title>
+<title>Green Gregory Opportunity OS</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+
 :root{
-  --bg:#0f1117;--bg2:#1a1d27;--bg3:#22263a;--border:#2e3248;
-  --text:#e4e6f0;--muted:#8b90a8;--hint:#555a72;
-  --green:#22c55e;--green-d:#14532d;--green-bg:#052e16;
-  --amber:#f59e0b;--red:#ef4444;--blue:#3b82f6;
-  --teal:#14b8a6;--teal-d:#134e4a;--purple:#a78bfa;--coral:#f97316;
+  --bg:#090c10;--bg2:#0f1318;--bg3:#161b23;--bg4:#1c2330;
+  --border:#1e2736;--border2:#28334a;
+  --text:#d6dce8;--muted:#5a6680;--hint:#334;
+  --green:#00e87a;--green-d:#003d20;--green-bg:#001a0e;--green-dim:#00b85f;
+  --amber:#f0a500;--amber-bg:#1a0f00;
+  --red:#ff4060;--red-bg:#1a0008;
+  --blue:#4da6ff;--blue-bg:#00122a;
+  --teal:#00d4c8;--teal-bg:#001a19;
+  --purple:#b87fff;--purple-bg:#0e0020;
+  --coral:#ff6b35;
+  --sidebar-w:210px;
+  --header-h:48px;
+  --font-ui:'Syne',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5}
-#seed-banner{display:none;background:#7f1d1d;color:#fca5a5;padding:8px 16px;font-size:12px;text-align:center;font-weight:600}
-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-header h1{font-size:15px;font-weight:600;color:var(--green)}
-#last-updated{font-size:11px;color:var(--muted)}
-#refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
-nav{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none}
-nav::-webkit-scrollbar{display:none}
-.tab-btn{flex:none;padding:9px 14px;font-size:12px;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
-.tab-btn.active{color:var(--green);border-bottom-color:var(--green);font-weight:600}
-.tab-badge{display:inline-block;background:var(--bg3);border-radius:9px;padding:1px 6px;font-size:10px;margin-left:4px;color:var(--muted)}
-.tab-btn.active .tab-badge{background:var(--green-d);color:var(--green)}
-main{padding:14px;max-width:960px;margin:0 auto}
-.tab-panel{display:none}.tab-panel.active{display:block}
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px}
-@media(max-width:500px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
-.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 8px;text-align:center}
-.kpi-value{font-size:20px;font-weight:700;line-height:1.2}
-.kpi-label{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
-.kv-green{color:var(--green)}.kv-teal{color:var(--teal)}.kv-amber{color:var(--amber)}.kv-blue{color:var(--blue)}.kv-purple{color:var(--purple)}
-.filter-bar{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.fbtn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 11px;font-size:12px;cursor:pointer}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+#hdr{height:var(--header-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:20}
+#hdr-logo{font-size:14px;font-weight:800;color:var(--green);letter-spacing:-.02em;white-space:nowrap}
+#hdr-logo span{color:var(--muted);font-weight:400}
+#mode-badge{font-family:var(--font-mono);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:.08em;cursor:default}
+.mode-demo{background:var(--red-bg);color:var(--red);border:1px solid #400010}
+.mode-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-d)}
+.mode-mixed{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2800}
+.mode-manual{background:var(--blue-bg);color:var(--blue);border:1px solid #002040}
+#hdr-spacer{flex:1}
+#last-updated{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+#refresh-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:var(--font-mono)}
+#refresh-btn:hover{border-color:var(--green);color:var(--green)}
+#sidebar-toggle{display:none;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px}
+
+/* ── LAYOUT ── */
+#layout{display:flex;flex:1;overflow:hidden}
+
+/* ── SIDEBAR ── */
+#sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
+.sb-section{padding:14px 0 6px 0}
+.sb-label{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:0 14px 6px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;user-select:none}
+.sb-item:hover{color:var(--text);background:var(--bg3)}
+.sb-item.active{color:var(--green);border-left-color:var(--green);background:var(--green-bg)}
+.sb-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;font-family:var(--font-mono);font-size:9px;background:var(--bg4);border-radius:9px;padding:1px 6px;color:var(--muted)}
+.sb-item.active .sb-badge{background:var(--green-d);color:var(--green)}
+.sb-divider{height:1px;background:var(--border);margin:6px 14px}
+#sb-kpi{padding:12px 14px;border-top:1px solid var(--border);margin-top:auto}
+.sb-kpi-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;margin-bottom:4px}
+.sb-kpi-label{color:var(--muted)}
+.sb-kpi-val{font-weight:600;color:var(--green)}
+
+/* ── MAIN CONTENT ── */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
+#content::-webkit-scrollbar{width:4px}
+#content::-webkit-scrollbar-thumb{background:var(--border2)}
+.panel{display:none;flex:1;flex-direction:column}
+.panel.active{display:flex}
+.panel-inner{padding:16px;max-width:1100px;width:100%}
+
+/* ── PANEL HEADER ── */
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.ph-title{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.ph-sub{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
+.ph-actions{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--font-ui);transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:hover{background:var(--green-dim)}
+.btn-ghost{background:none;border:1px solid var(--border2);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--green);color:var(--green)}
+.btn-amber{background:var(--amber-bg);border:1px solid #3a2800;color:var(--amber)}
+.btn-blue{background:var(--blue-bg);border:1px solid #002040;color:var(--blue)}
+.btn-sm{padding:4px 9px;font-size:11px}
+
+/* ── FILTER BAR ── */
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.fbtn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:var(--font-ui);font-weight:600;transition:all .12s}
+.fbtn:hover{border-color:var(--border2);color:var(--text)}
 .fbtn.active{background:var(--green-d);border-color:var(--green);color:var(--green)}
-.fsearch{flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:13px}
-.fsearch::placeholder{color:var(--hint)}.fsearch:focus{outline:none;border-color:var(--green)}
-.sec-hd{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:9px}
-.supply-card,.deal-card,.lead-card,.asm-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
-.asm-card{border-color:#3b0764}
+.fsearch{flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono)}
+.fsearch::placeholder{color:var(--muted)}
+.fsearch:focus{outline:none;border-color:var(--green)}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+@media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
+.kpi-val{font-size:22px;font-weight:800;line-height:1.1;font-family:var(--font-mono)}
+.kpi-lbl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
+.cv-green{color:var(--green)}.cv-teal{color:var(--teal)}.cv-amber{color:var(--amber)}.cv-blue{color:var(--blue)}.cv-purple{color:var(--purple)}.cv-red{color:var(--red)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
-.card-title{font-size:13px;font-weight:500;flex:1;line-height:1.4}
-.score-badge{flex:none;font-size:12px;font-weight:700;border-radius:5px;padding:2px 7px}
-.sh{background:#14532d;color:#4ade80}.sm{background:#78350f;color:#fcd34d}.sl{background:#1e1b4b;color:#a5b4fc}
-.seed-tag{background:#7f1d1d;color:#fca5a5;font-size:10px;border-radius:4px;padding:1px 5px;margin-left:6px}
-.dead-link-tag{background:var(--bg3);color:var(--hint);font-size:10px;border-radius:4px;padding:1px 5px}
-.card-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:5px}
-.tag{background:var(--bg3);border-radius:4px;padding:1px 6px}
-.card-nums{display:flex;gap:12px;font-size:13px;flex-wrap:wrap}
+.card-title{font-size:13px;font-weight:700;flex:1;line-height:1.4}
+.card-meta{display:flex;flex-wrap:wrap;gap:4px;font-size:10px;color:var(--muted);margin-bottom:6px;font-family:var(--font-mono)}
+.tag{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 6px}
+.tag-green{background:var(--green-bg);border-color:var(--green-d);color:var(--green)}
+.tag-amber{background:var(--amber-bg);border-color:#3a2800;color:var(--amber)}
+.tag-blue{background:var(--blue-bg);border-color:#002040;color:var(--blue)}
+.tag-purple{background:var(--purple-bg);border-color:#2a0050;color:var(--purple)}
+.tag-red{background:var(--red-bg);border-color:#400010;color:var(--red)}
+.tag-teal{background:var(--teal-bg);border-color:#003030;color:var(--teal)}
+.card-nums{display:flex;gap:14px;font-size:12px;flex-wrap:wrap;font-family:var(--font-mono)}
 .n-buy{color:var(--muted)}.n-sell{color:var(--teal);font-weight:600}.n-profit{color:var(--green);font-weight:600}.n-margin{color:var(--amber)}
-.card-link{display:inline-block;margin-top:7px;font-size:11px;color:var(--blue);text-decoration:none}
-.deal-sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0;font-size:12px}
-@media(max-width:480px){.deal-sides{grid-template-columns:1fr}}
-.side-box{background:var(--bg3);border-radius:8px;padding:9px 11px}
-.side-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+
+/* score badges */
+.score-badge{flex-shrink:0;font-family:var(--font-mono);font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px}
+.sh{background:#003d20;color:#00e87a}.sm{background:#3a2800;color:#f0a500}.sl{background:#0e0020;color:#b87fff}
+
+/* seed / demo tag */
+.demo-tag{background:var(--red-bg);color:var(--red);font-size:9px;border-radius:3px;padding:1px 5px;font-family:var(--font-mono);border:1px solid #400010}
+.manual-tag{background:var(--blue-bg);color:var(--blue);font-size:9px;border-radius:3px;padding:1px 5px;font-family:var(--font-mono);border:1px solid #002040}
+
+/* deal card two-column sides */
+.deal-sides{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;font-size:11px}
+@media(max-width:500px){.deal-sides{grid-template-columns:1fr}}
+.side-box{background:var(--bg3);border-radius:6px;padding:8px 10px;border:1px solid var(--border)}
+.side-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:var(--font-mono)}
 .side-supply .side-label{color:var(--amber)}.side-buyer .side-label{color:var(--teal)}
-.reason-box{background:var(--bg3);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--muted);margin:6px 0}
-.action-box{background:var(--green-bg);border:1px solid var(--green-d);border-radius:7px;padding:8px 10px;font-size:12px;color:var(--green);margin-top:6px}
-.action-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;color:#4ade80}
-.asm-conf{font-size:11px;color:var(--purple)}
-.asm-desc{font-size:12px;color:var(--muted);margin:6px 0;line-height:1.5}
-.asm-items{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
-.asm-item{background:var(--bg3);border-radius:4px;padding:2px 8px;font-size:11px;color:var(--muted)}
-.asm-action{background:#1e1b4b;border:1px solid #3730a3;border-radius:7px;padding:7px 10px;font-size:12px;color:#a5b4fc;margin-top:5px}
-.lead-name{font-size:13px;font-weight:500}
-.lead-role-supplier{color:var(--purple)}.lead-role-buyer{color:var(--teal)}
-.lead-meta{font-size:11px;color:var(--muted);margin-top:3px}
-.conf-bar-wrap{height:4px;background:var(--bg3);border-radius:2px;margin-top:5px;width:120px}
-.conf-bar{height:4px;border-radius:2px;background:var(--teal)}
-.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;overflow-x:auto}
+.reason-box{background:var(--bg3);border-radius:5px;padding:7px 9px;font-size:11px;color:var(--muted);margin:5px 0;border-left:2px solid var(--border2)}
+.action-box{background:var(--green-bg);border:1px solid var(--green-d);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--green);margin-top:5px}
+.action-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;color:var(--green-dim);font-family:var(--font-mono)}
+
+/* assembly card */
+.asm-card{background:var(--bg2);border:1px solid #2a0050;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.asm-conf{font-size:10px;color:var(--purple);font-family:var(--font-mono)}
+.asm-desc{font-size:11px;color:var(--muted);margin:5px 0;line-height:1.6}
+.asm-items{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.asm-item{background:var(--bg3);border-radius:3px;padding:1px 7px;font-size:10px;color:var(--muted);font-family:var(--font-mono)}
+.asm-action{background:var(--purple-bg);border:1px solid #2a0050;border-radius:5px;padding:6px 9px;font-size:11px;color:var(--purple);margin-top:5px}
+
+/* operator/demand card */
+.demand-card{background:var(--bg2);border:1px solid #003030;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.operator-card{background:var(--bg2);border:1px solid #001a40;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.infra-card{background:var(--bg2);border:1px solid #1a1a00;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+
+/* tables */
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th,td{padding:8px 10px;font-size:12px;border-bottom:1px solid var(--border);white-space:nowrap}
-th{color:var(--muted);font-weight:500;text-transform:uppercase;font-size:10px;letter-spacing:.05em;background:var(--bg3)}
+th,td{padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);white-space:nowrap}
+th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.07em;background:var(--bg3);font-family:var(--font-mono)}
 tr:last-child td{border-bottom:none}
 td.r,th.r{text-align:right}
-.tg{color:var(--green)}.ta{color:var(--amber)}.tt{color:var(--teal)}.tm{color:var(--muted)}
-.fdot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.tg{color:var(--green)}.ta{color:var(--amber)}.tt{color:var(--teal)}.tm{color:var(--muted)}.tp{color:var(--purple)}
+
+/* feed dot */
+.fdot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .fdot-ok{background:var(--green)}.fdot-warn{background:var(--amber)}.fdot-err{background:var(--red)}
-.empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:13px}
-.empty strong{display:block;font-size:15px;margin-bottom:6px;color:var(--text)}
-#loading{text-align:center;padding:60px 20px;color:var(--muted)}
-.spinner{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.totals-row{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap}
+
+/* empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:12px}
+.empty strong{display:block;font-size:14px;margin-bottom:6px;color:var(--text)}
+.empty code{font-family:var(--font-mono);font-size:11px;color:var(--green)}
+
+/* totals row */
+.totals-row{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;font-family:var(--font-mono)}
 .tv{font-weight:700;color:var(--text)}.tg2{font-weight:700;color:var(--green)}
+
+/* loading */
+#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--muted);font-family:var(--font-mono);font-size:12px;gap:12px}
+.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MATCH WORKBENCH ── */
+#workbench-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:calc(100vh - var(--header-h) - 80px);overflow:hidden}
+@media(max-width:700px){#workbench-wrap{grid-template-columns:1fr;height:auto;overflow:visible}}
+.wb-pane{background:var(--bg2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden}
+.wb-pane-hd{padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px;font-family:var(--font-mono);flex-shrink:0}
+.wb-pane-body{overflow-y:auto;flex:1;padding:10px}
+.wb-pane-body::-webkit-scrollbar{width:3px}
+.wb-pane-body::-webkit-scrollbar-thumb{background:var(--border2)}
+.wb-item{padding:8px 10px;border-radius:5px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .12s;font-size:12px;background:var(--bg3)}
+.wb-item:hover{border-color:var(--border2);background:var(--bg4)}
+.wb-item.selected{border-color:var(--green);background:var(--green-bg)}
+.wb-item-title{font-weight:600;margin-bottom:2px}
+.wb-item-meta{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
+.wb-match{padding:8px 10px;border-radius:5px;border:1px solid var(--border);margin-bottom:6px;font-size:11px;background:var(--bg3)}
+.wb-match-header{display:flex;justify-content:space-between;margin-bottom:3px}
+.wb-match-type{font-size:9px;font-family:var(--font-mono);padding:1px 5px;border-radius:3px;font-weight:600}
+.wmt-buyer{background:var(--teal-bg);color:var(--teal);border:1px solid #003030}
+.wmt-seller{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2800}
+.wmt-operator{background:var(--blue-bg);color:var(--blue);border:1px solid #002040}
+.wmt-assembly{background:var(--purple-bg);color:var(--purple);border:1px solid #2a0050}
+.wb-approve-btn{font-size:9px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-d);border-radius:3px;padding:2px 7px;cursor:pointer;font-family:var(--font-mono)}
+.wb-approve-btn:hover{background:var(--green-d)}
+.wb-placeholder{text-align:center;padding:30px 16px;color:var(--muted);font-size:11px;font-family:var(--font-mono)}
+
+/* ── VISUAL FLOW BUILDER ── */
+#flow-canvas{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:auto;position:relative;height:calc(100vh - var(--header-h) - 130px);min-height:400px}
+.flow-stage{position:relative;min-width:900px;padding:30px}
+.flow-row{display:flex;gap:0;align-items:center;margin-bottom:28px}
+.flow-node{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 14px;min-width:160px;max-width:200px;flex-shrink:0}
+.flow-node-type{font-size:8px;font-family:var(--font-mono);font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.flow-node-title{font-size:11px;font-weight:700;line-height:1.4}
+.flow-node-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--font-mono)}
+.flow-node.fn-supply{border-color:#3a2800}.flow-node.fn-supply .flow-node-type{color:var(--amber)}
+.flow-node.fn-demand{border-color:#003030}.flow-node.fn-demand .flow-node-type{color:var(--teal)}
+.flow-node.fn-operator{border-color:#002040}.flow-node.fn-operator .flow-node-type{color:var(--blue)}
+.flow-node.fn-assembly{border-color:#2a0050}.flow-node.fn-assembly .flow-node-type{color:var(--purple)}
+.flow-node.fn-deal{border-color:var(--green-d);background:var(--green-bg)}.flow-node.fn-deal .flow-node-type{color:var(--green)}
+.flow-arrow{flex:1;display:flex;align-items:center;padding:0 4px;min-width:28px}
+.flow-arrow svg{width:100%;height:14px}
+.flow-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;font-family:var(--font-mono);margin-bottom:10px}
+.fl-item{display:flex;align-items:center;gap:5px}
+.fl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── MANUAL ADD ITEM ── */
+.add-form{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:10px;font-family:var(--font-mono);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+.form-group input,.form-group select,.form-group textarea{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono)}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--green)}
+.form-group textarea{resize:vertical;min-height:70px;line-height:1.5}
+.form-group select option{background:var(--bg3)}
+.form-full{grid-column:1/-1}
+.form-actions{display:flex;gap:8px;margin-top:12px}
+.paste-area{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:10px;min-height:80px;resize:vertical;width:100%}
+.paste-area:focus{outline:none;border-color:var(--green)}
+
+/* ── CONFIG ── */
+.config-section{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.config-section h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;color:var(--text);font-family:var(--font-mono)}
+.source-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.source-row:last-child{border-bottom:none}
+.toggle{position:relative;width:32px;height:18px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--bg4);border-radius:9px;cursor:pointer;border:1px solid var(--border2);transition:.2s}
+.toggle input:checked + .toggle-slider{background:var(--green-d);border-color:var(--green)}
+.toggle-slider:before{content:'';position:absolute;width:12px;height:12px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.2s}
+.toggle input:checked + .toggle-slider:before{transform:translateX(14px);background:var(--green)}
+.source-name{font-weight:600;min-width:140px;font-family:var(--font-mono)}
+.source-type-tag{font-size:9px;padding:1px 5px;border-radius:3px;font-family:var(--font-mono);font-weight:600}
+.config-note{font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:8px;padding:8px;background:var(--bg3);border-radius:5px;border-left:2px solid var(--border2)}
+
+/* scrollbar for content */
+#content::-webkit-scrollbar{width:4px}
+#content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* responsive sidebar */
+@media(max-width:768px){
+  #sidebar{position:fixed;left:0;top:var(--header-h);bottom:0;z-index:100;transform:translateX(-100%);transition:transform .2s}
+  #sidebar.open{transform:translateX(0)}
+  #sidebar-toggle{display:block}
+  .layout-overlay{display:none;position:fixed;inset:0;top:var(--header-h);background:rgba(0,0,0,.5);z-index:99}
+  .layout-overlay.active{display:block}
+}
+
+/* section header */
+.sec-hd{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-family:var(--font-mono)}
 </style>
 </head>
 <body>
-<div id="seed-banner">DEMO / SEED DATA — Links are placeholders. Run scanner.py with live feeds to replace.</div>
-<header>
-  <h1>🟢 Green Gregory OS</h1>
-  <div style="display:flex;align-items:center;gap:10px">
-    <span id="last-updated">loading…</span>
-    <button id="refresh-btn" onclick="loadData()">↻</button>
+
+<!-- HEADER -->
+<div id="hdr">
+  <button id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+  <div id="hdr-logo">🟢 Green Gregory <span>Opportunity OS</span></div>
+  <span id="mode-badge" class="mode-demo">DEMO</span>
+  <div id="hdr-spacer"></div>
+  <span id="last-updated">—</span>
+  <button id="refresh-btn" onclick="loadData()">↻ refresh</button>
+</div>
+
+<div class="layout-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div id="layout">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sb-section">
+    <div class="sb-label">Overview</div>
+    <div class="sb-item active" data-panel="dashboard" onclick="nav(this)">
+      <span class="sb-icon">⬛</span>Dashboard
+    </div>
   </div>
-</header>
-<nav>
-  <button class="tab-btn active" data-tab="supply">Supply <span class="tab-badge" id="badge-supply">0</span></button>
-  <button class="tab-btn" data-tab="buyers">Buyers <span class="tab-badge" id="badge-buyers">0</span></button>
-  <button class="tab-btn" data-tab="matched">Matched Deals <span class="tab-badge" id="badge-matched">0</span></button>
-  <button class="tab-btn" data-tab="assembly">Assembly <span class="tab-badge" id="badge-assembly">0</span></button>
-  <button class="tab-btn" data-tab="pipeline">Pipeline</button>
-  <button class="tab-btn" data-tab="pl">P&amp;L</button>
-  <button class="tab-btn" data-tab="feeds">Feeds</button>
+  <div class="sb-divider"></div>
+  <div class="sb-section">
+    <div class="sb-label">Signals</div>
+    <div class="sb-item" data-panel="supply" onclick="nav(this)">
+      <span class="sb-icon">📦</span>Supply<span class="sb-badge" id="sb-supply">0</span>
+    </div>
+    <div class="sb-item" data-panel="demand" onclick="nav(this)">
+      <span class="sb-icon">🎯</span>Demand / ISO / WTB<span class="sb-badge" id="sb-demand">0</span>
+    </div>
+    <div class="sb-item" data-panel="operators" onclick="nav(this)">
+      <span class="sb-icon">🔧</span>Operators<span class="sb-badge" id="sb-operators">0</span>
+    </div>
+    <div class="sb-item" data-panel="infra" onclick="nav(this)">
+      <span class="sb-icon">🏗️</span>Infrastructure<span class="sb-badge" id="sb-infra">0</span>
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-section">
+    <div class="sb-label">Workbench</div>
+    <div class="sb-item" data-panel="matches" onclick="nav(this)">
+      <span class="sb-icon">⚡</span>Matched Deals<span class="sb-badge" id="sb-matches">0</span>
+    </div>
+    <div class="sb-item" data-panel="assembly" onclick="nav(this)">
+      <span class="sb-icon">🏭</span>Assembly<span class="sb-badge" id="sb-assembly">0</span>
+    </div>
+    <div class="sb-item" data-panel="workbench" onclick="nav(this)">
+      <span class="sb-icon">🔬</span>Match Workbench
+    </div>
+    <div class="sb-item" data-panel="flow" onclick="nav(this)">
+      <span class="sb-icon">🗺️</span>Visual Flow
+    </div>
+  </div>
+  <div class="sb-divider"></div>
+  <div class="sb-section">
+    <div class="sb-label">System</div>
+    <div class="sb-item" data-panel="add" onclick="nav(this)">
+      <span class="sb-icon">➕</span>Add Item
+    </div>
+    <div class="sb-item" data-panel="config" onclick="nav(this)">
+      <span class="sb-icon">⚙️</span>Config
+    </div>
+    <div class="sb-item" data-panel="feeds" onclick="nav(this)">
+      <span class="sb-icon">📡</span>Feed Health<span class="sb-badge" id="sb-feeds">0</span>
+    </div>
+  </div>
+  <div id="sb-kpi">
+    <div class="sb-kpi-row"><span class="sb-kpi-label">Hot matches</span><span class="sb-kpi-val" id="sb-hot">—</span></div>
+    <div class="sb-kpi-row"><span class="sb-kpi-label">Est profit</span><span class="sb-kpi-val" id="sb-profit">—</span></div>
+    <div class="sb-kpi-row"><span class="sb-kpi-label">Assembly opps</span><span class="sb-kpi-val" id="sb-asm-count">—</span></div>
+  </div>
 </nav>
-<div id="loading"><div class="spinner"></div>Loading dashboard…</div>
-<main id="app" style="display:none">
 
-  <div class="tab-panel active" id="tab-supply">
-    <div class="kpi-grid" id="kpi-supply"></div>
-    <div class="filter-bar">
-      <button class="fbtn active" data-sf="all">All</button>
-      <button class="fbtn" data-sf="govdeals">GovDeals</button>
-      <button class="fbtn" data-sf="publicsurplus">PublicSurplus</button>
-      <button class="fbtn" data-sf="craigslist">Craigslist</button>
-      <input class="fsearch" id="supply-search" placeholder="Search supply…" oninput="renderSupply()">
+<!-- MAIN CONTENT -->
+<div id="content">
+  <div id="loading"><div class="spinner"></div>Loading Opportunity OS…</div>
+
+  <!-- DASHBOARD -->
+  <div class="panel" id="panel-dashboard">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Dashboard</div>
+          <div class="ph-sub">Opportunity OS overview</div>
+        </div>
+      </div>
+      <div class="kpi-grid" id="kpi-main"></div>
+      <div class="sec-hd">Top Matched Deals</div>
+      <div id="dash-matches"></div>
+      <div class="sec-hd" style="margin-top:14px">Assembly Opportunities</div>
+      <div id="dash-assembly"></div>
     </div>
-    <div class="totals-row" id="supply-totals"></div>
-    <div class="sec-hd">Supply Opportunities</div>
-    <div id="supply-list"></div>
   </div>
 
-  <div class="tab-panel" id="tab-buyers">
-    <div class="filter-bar">
-      <button class="fbtn active" data-bf="all">All</button>
-      <button class="fbtn" data-bf="supplier">Suppliers</button>
-      <button class="fbtn" data-bf="buyer">Buyers</button>
-      <input class="fsearch" id="buyers-search" placeholder="Search leads…" oninput="renderBuyers()">
+  <!-- SUPPLY -->
+  <div class="panel" id="panel-supply">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Supply</div>
+          <div class="ph-sub">Seller / auction / surplus listings</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[data-panel=add]'))">+ Add manually</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" data-sf="all" onclick="sf(this,'supply')">All</button>
+        <button class="fbtn" data-sf="govdeals" onclick="sf(this,'supply')">GovDeals</button>
+        <button class="fbtn" data-sf="publicsurplus" onclick="sf(this,'supply')">PublicSurplus</button>
+        <button class="fbtn" data-sf="craigslist" onclick="sf(this,'supply')">Craigslist</button>
+        <button class="fbtn" data-sf="facebook" onclick="sf(this,'supply')">Facebook</button>
+        <button class="fbtn" data-sf="garage_sale" onclick="sf(this,'supply')">Garage/Estate</button>
+        <button class="fbtn" data-sf="manual" onclick="sf(this,'supply')">Manual</button>
+        <input class="fsearch" id="supply-search" placeholder="Search supply…" oninput="renderSupply()">
+      </div>
+      <div class="totals-row" id="supply-totals"></div>
+      <div id="supply-list"></div>
     </div>
-    <div class="totals-row" id="buyers-totals"></div>
-    <div class="sec-hd">Buyer / Demand Leads</div>
-    <div id="buyers-list"></div>
   </div>
 
-  <div class="tab-panel" id="tab-matched">
-    <div class="filter-bar">
-      <button class="fbtn active" data-mf="all">All</button>
-      <button class="fbtn" data-mf="hi">Score ≥80</button>
-      <button class="fbtn" data-mf="med">Score 60–79</button>
-      <button class="fbtn" data-mf="live">Live URLs only</button>
-      <input class="fsearch" id="matched-search" placeholder="Search deals…" oninput="renderMatched()">
+  <!-- DEMAND / ISO / WTB -->
+  <div class="panel" id="panel-demand">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Demand / ISO / WTB</div>
+          <div class="ph-sub">Buy signals, ISO posts, service requests</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="navAdd('demand')">+ Add demand signal</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" data-df="all" onclick="sf(this,'demand')">All</button>
+        <button class="fbtn" data-df="iso" onclick="sf(this,'demand')">ISO</button>
+        <button class="fbtn" data-df="wtb" onclick="sf(this,'demand')">WTB</button>
+        <button class="fbtn" data-df="service_request" onclick="sf(this,'demand')">Service Request</button>
+        <button class="fbtn" data-df="manual" onclick="sf(this,'demand')">Manual</button>
+        <input class="fsearch" id="demand-search" placeholder="Search demand signals…" oninput="renderDemand()">
+      </div>
+      <div class="totals-row" id="demand-totals"></div>
+      <div id="demand-list"></div>
     </div>
-    <div class="totals-row" id="matched-totals"></div>
-    <div class="sec-hd">Matched Deals — Supply meets Demand</div>
-    <div id="matched-list"></div>
   </div>
 
-  <div class="tab-panel" id="tab-assembly">
-    <div class="sec-hd">Business Assembly Opportunities</div>
-    <div id="assembly-list"></div>
+  <!-- OPERATORS -->
+  <div class="panel" id="panel-operators">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Operators</div>
+          <div class="ph-sub">Service providers, contractors, resellers</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="navAdd('operator')">+ Add operator</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" data-opf="all" onclick="sf(this,'operators')">All</button>
+        <button class="fbtn" data-opf="contractor" onclick="sf(this,'operators')">Contractor</button>
+        <button class="fbtn" data-opf="reseller" onclick="sf(this,'operators')">Reseller</button>
+        <button class="fbtn" data-opf="service" onclick="sf(this,'operators')">Service</button>
+        <button class="fbtn" data-opf="manual" onclick="sf(this,'operators')">Manual</button>
+        <input class="fsearch" id="operators-search" placeholder="Search operators…" oninput="renderOperators()">
+      </div>
+      <div class="totals-row" id="operators-totals"></div>
+      <div id="operators-list"></div>
+    </div>
   </div>
 
-  <div class="tab-panel" id="tab-pipeline">
-    <div class="sec-hd">Pipeline Summary by Source</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Source</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Est Profit</th></tr></thead>
-      <tbody id="pipeline-tbody"></tbody>
-    </table></div>
-    <div class="kpi-grid" id="pipeline-kpis" style="margin-top:16px"></div>
+  <!-- INFRASTRUCTURE -->
+  <div class="panel" id="panel-infra">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Infrastructure</div>
+          <div class="ph-sub">Spaces, vehicles, storage, facilities</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="navAdd('infrastructure')">+ Add infrastructure</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" data-inf="all" onclick="sf(this,'infra')">All</button>
+        <button class="fbtn" data-inf="space" onclick="sf(this,'infra')">Space</button>
+        <button class="fbtn" data-inf="vehicle" onclick="sf(this,'infra')">Vehicle</button>
+        <button class="fbtn" data-inf="storage" onclick="sf(this,'infra')">Storage</button>
+        <button class="fbtn" data-inf="manual" onclick="sf(this,'infra')">Manual</button>
+        <input class="fsearch" id="infra-search" placeholder="Search infrastructure…" oninput="renderInfra()">
+      </div>
+      <div class="totals-row" id="infra-totals"></div>
+      <div id="infra-list"></div>
+    </div>
   </div>
 
-  <div class="tab-panel" id="tab-pl">
-    <div class="sec-hd">Profit &amp; Loss by Source / Status</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Source</th><th>Status</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Total Sell Est</th><th class="r">Est Profit</th><th class="r">Avg Margin</th></tr></thead>
-      <tbody id="pl-tbody"></tbody>
-    </table></div>
+  <!-- MATCHED DEALS -->
+  <div class="panel" id="panel-matches">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Matched Deals</div>
+          <div class="ph-sub">Supply meets demand — scored opportunities</div>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <button class="fbtn active" data-mf="all" onclick="sf(this,'matches')">All</button>
+        <button class="fbtn" data-mf="hi" onclick="sf(this,'matches')">Score ≥ 80</button>
+        <button class="fbtn" data-mf="med" onclick="sf(this,'matches')">Score 60–79</button>
+        <button class="fbtn" data-mf="live" onclick="sf(this,'matches')">Live URLs</button>
+        <input class="fsearch" id="matches-search" placeholder="Search deals…" oninput="renderMatches()">
+      </div>
+      <div class="totals-row" id="matches-totals"></div>
+      <div id="matches-list"></div>
+    </div>
   </div>
 
-  <div class="tab-panel" id="tab-feeds">
-    <div class="sec-hd">Feed Health</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Source</th><th>Status</th><th class="r">Count</th><th>Last Scraped</th></tr></thead>
-      <tbody id="feeds-tbody"></tbody>
-    </table></div>
+  <!-- ASSEMBLY -->
+  <div class="panel" id="panel-assembly">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Assembly Opportunities</div>
+          <div class="ph-sub">Business-in-a-box combinations</div>
+        </div>
+      </div>
+      <div id="assembly-list"></div>
+    </div>
   </div>
 
-</main>
+  <!-- MATCH WORKBENCH -->
+  <div class="panel" id="panel-workbench">
+    <div class="panel-inner" style="max-width:100%">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Match Workbench</div>
+          <div class="ph-sub">Select any item to see possible matches. Approve to connect.</div>
+        </div>
+      </div>
+      <div id="workbench-wrap">
+        <div class="wb-pane" id="wb-left">
+          <div class="wb-pane-hd">
+            <span>📋</span>
+            <span>All Items</span>
+            <div style="margin-left:auto;display:flex;gap:5px">
+              <button class="fbtn fbtn active" style="padding:2px 7px;font-size:10px" id="wbt-all" onclick="wbFilter('all',this)">All</button>
+              <button class="fbtn" style="padding:2px 7px;font-size:10px" id="wbt-supply" onclick="wbFilter('supply',this)">Supply</button>
+              <button class="fbtn" style="padding:2px 7px;font-size:10px" id="wbt-demand" onclick="wbFilter('demand',this)">Demand</button>
+            </div>
+          </div>
+          <div class="wb-pane-body" id="wb-items"></div>
+        </div>
+        <div class="wb-pane" id="wb-right">
+          <div class="wb-pane-hd"><span>⚡</span><span>Possible Matches</span><span id="wb-selected-title" style="color:var(--green);font-size:10px;margin-left:4px;font-weight:400"></span></div>
+          <div class="wb-pane-body" id="wb-matches">
+            <div class="wb-placeholder">← Select an item on the left<br>to see possible matches</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VISUAL FLOW BUILDER -->
+  <div class="panel" id="panel-flow">
+    <div class="panel-inner" style="max-width:100%">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Visual Flow Builder</div>
+          <div class="ph-sub">Connected opportunity chains — prototype view</div>
+        </div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="renderFlow()">↻ Rebuild</button>
+        </div>
+      </div>
+      <div class="flow-legend">
+        <div class="fl-item"><div class="fl-dot" style="background:var(--amber)"></div><span style="color:var(--muted)">Supply</span></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--blue)"></div><span style="color:var(--muted)">Operator</span></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--teal)"></div><span style="color:var(--muted)">Demand</span></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--purple)"></div><span style="color:var(--muted)">Assembly</span></div>
+        <div class="fl-item"><div class="fl-dot" style="background:var(--green)"></div><span style="color:var(--muted)">Deal</span></div>
+      </div>
+      <div id="flow-canvas"><div class="flow-stage" id="flow-stage"></div></div>
+    </div>
+  </div>
+
+  <!-- ADD ITEM -->
+  <div class="panel" id="panel-add">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Add Item</div>
+          <div class="ph-sub">Manually paste or enter any signal — supply, demand, operator, infrastructure</div>
+        </div>
+      </div>
+
+      <!-- Paste zone -->
+      <div class="add-form" id="paste-section">
+        <div class="sec-hd">Paste raw text (Facebook Marketplace post, ISO post, Craigslist listing, etc.)</div>
+        <textarea class="paste-area" id="paste-input" placeholder="Paste any raw listing text here. The form below will pre-fill based on what you paste.&#10;&#10;Example: 'ISO pressure washer, willing to pay up to $500, Cincinnati area'&#10;or: 'Selling commercial ice machine Manitowoc 600lb/day, asking $400 OBO, Louisville KY'"></textarea>
+        <button class="btn btn-ghost btn-sm" onclick="parsePaste()">⚡ Parse &amp; pre-fill form</button>
+      </div>
+
+      <!-- Manual form -->
+      <div class="add-form">
+        <div class="sec-hd" style="margin-bottom:14px">Item details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Signal Type</label>
+            <select id="add-type">
+              <option value="supply">Supply (selling / auction / surplus)</option>
+              <option value="demand">Demand / ISO / WTB</option>
+              <option value="operator">Operator / Service Provider</option>
+              <option value="infrastructure">Infrastructure</option>
+              <option value="business_for_sale">Business For Sale</option>
+              <option value="garage_sale">Garage / Estate Sale</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Source</label>
+            <select id="add-source">
+              <option value="manual">Manual Entry</option>
+              <option value="facebook">Facebook Marketplace</option>
+              <option value="craigslist">Craigslist</option>
+              <option value="garage_sale">Garage / Estate Sale</option>
+              <option value="govdeals">GovDeals</option>
+              <option value="publicsurplus">PublicSurplus</option>
+              <option value="nextdoor">Nextdoor</option>
+              <option value="local_listing">Local Business Listing</option>
+              <option value="bizbuysell">BizBuySell</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group form-full">
+            <label>Title / Description</label>
+            <input type="text" id="add-title" placeholder="e.g. ISO pressure washer — willing to pay $400–$600, Cincinnati area">
+          </div>
+          <div class="form-group">
+            <label>Price / Budget</label>
+            <input type="text" id="add-price" placeholder="e.g. $400 OBO or 'up to $600'">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="add-location" placeholder="City, State or ZIP">
+          </div>
+          <div class="form-group">
+            <label>URL (optional)</label>
+            <input type="text" id="add-url" placeholder="https://…">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <input type="text" id="add-category" placeholder="e.g. equipment, food service, IT…">
+          </div>
+          <div class="form-group form-full">
+            <label>Notes</label>
+            <textarea id="add-notes" placeholder="Any extra context, contact info, follow-up notes…"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" onclick="submitAddItem()">+ Add to Workbench</button>
+          <button class="btn btn-ghost" onclick="clearAddForm()">Clear</button>
+        </div>
+        <div id="add-feedback" style="margin-top:10px;font-size:11px;font-family:var(--font-mono)"></div>
+      </div>
+
+      <!-- Recently added -->
+      <div class="sec-hd">Recently Added (this session)</div>
+      <div id="recently-added-list"><div class="empty" style="padding:20px"><strong>Nothing added yet</strong></div></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div class="panel" id="panel-config">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Config</div>
+          <div class="ph-sub">Sources, locations, search criteria</div>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>Search Location</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Primary ZIP / City</label>
+            <input type="text" id="cfg-zip" placeholder="e.g. 45202 or Cincinnati, OH">
+          </div>
+          <div class="form-group">
+            <label>Search Radius (miles)</label>
+            <input type="number" id="cfg-radius" value="75" min="10" max="500">
+          </div>
+          <div class="form-group">
+            <label>Market Label</label>
+            <input type="text" id="cfg-market" placeholder="e.g. Cincinnati Metro">
+          </div>
+          <div class="form-group">
+            <label>Max Buy Price ($)</label>
+            <input type="number" id="cfg-max-buy" value="5000" min="100">
+          </div>
+        </div>
+        <div class="form-actions" style="margin-top:10px">
+          <button class="btn btn-primary btn-sm" onclick="saveConfig()">Save Config</button>
+        </div>
+        <div id="cfg-feedback" style="margin-top:8px;font-size:11px;font-family:var(--font-mono);color:var(--green)"></div>
+      </div>
+
+      <div class="config-section">
+        <h3>Sources</h3>
+        <div class="config-note">Enable/disable which sources the scanner checks. Full scraper support varies — manual import always available.</div>
+        <div style="margin-top:10px" id="sources-list"></div>
+      </div>
+
+      <div class="config-section">
+        <h3>Include / Exclude Keywords</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Include Keywords (comma separated)</label>
+            <textarea id="cfg-include" placeholder="pressure washer, pallet racking, cisco, ice machine, forklift…"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Exclude Keywords (comma separated)</label>
+            <textarea id="cfg-exclude" placeholder="broken, parts only, for parts, no engine…"></textarea>
+          </div>
+        </div>
+        <div class="form-actions" style="margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="saveKeywords()">Save Keywords</button>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <h3>Google Sheet Sync</h3>
+        <div class="config-note">Sheet ID: <strong style="color:var(--green);font-family:var(--font-mono)">173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w</strong><br>
+        Config changes made here can be exported to the sheet. Sheet changes require re-running export_json.py to sync to the dashboard.</div>
+        <div class="form-actions" style="margin-top:10px">
+          <button class="btn btn-ghost btn-sm" onclick="copySheetId()">📋 Copy Sheet ID</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FEED HEALTH -->
+  <div class="panel" id="panel-feeds">
+    <div class="panel-inner">
+      <div class="ph">
+        <div>
+          <div class="ph-title">Feed Health</div>
+          <div class="ph-sub">Source status, last scraped, record counts</div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Source</th><th>Status</th><th class="r">Count</th><th>Last Scraped</th><th>Signal Type</th></tr></thead>
+          <tbody id="feeds-tbody"></tbody>
+        </table>
+      </div>
+      <div class="sec-hd" style="margin-top:16px">P&amp;L Summary</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Source</th><th>Status</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Sell Est</th><th class="r">Est Profit</th><th class="r">Margin</th></tr></thead>
+          <tbody id="pl-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+</div><!-- /layout -->
+
 <script>
-const DATA_URL='dashboard.json';
-let D=null,supplyFilter='all',buyerFilter='all',matchFilter='all';
+// ─────────────────────────────────────────────────────
+// DATA & STATE
+// ─────────────────────────────────────────────────────
+const DATA_URL = 'dashboard.json';
+let D = null;
+let manualItems = JSON.parse(localStorage.getItem('gg_manual_items') || '[]');
+let sessionAdded = [];
+let wbSelected = null;
+let wbTypeFilter = 'all';
 
+// Filter states
+const filters = { supply:'all', demand:'all', operators:'all', infra:'all', matches:'all' };
+
+// Config state
+let CFG = JSON.parse(localStorage.getItem('gg_config') || '{}');
+if (!CFG.zip)      CFG.zip = '';
+if (!CFG.radius)   CFG.radius = 75;
+if (!CFG.market)   CFG.market = '';
+if (!CFG.maxBuy)   CFG.maxBuy = 5000;
+if (!CFG.include)  CFG.include = '';
+if (!CFG.exclude)  CFG.exclude = '';
+if (!CFG.sources)  CFG.sources = {};
+
+const DEFAULT_SOURCES = [
+  { id:'govdeals',       name:'GovDeals',              type:'supply',        scraperReady:true  },
+  { id:'publicsurplus',  name:'PublicSurplus',          type:'supply',        scraperReady:true  },
+  { id:'craigslist_fso', name:'Craigslist — For Sale',  type:'supply',        scraperReady:true  },
+  { id:'craigslist_iso', name:'Craigslist — Wanted/ISO',type:'demand',        scraperReady:true  },
+  { id:'craigslist_svc', name:'Craigslist — Services',  type:'operator',      scraperReady:true  },
+  { id:'facebook',       name:'Facebook Marketplace',   type:'supply/demand', scraperReady:false },
+  { id:'garage_sale',    name:'Garage / Estate Sales',  type:'supply',        scraperReady:false },
+  { id:'nextdoor',       name:'Nextdoor',               type:'demand',        scraperReady:false },
+  { id:'bizbuysell',     name:'BizBuySell',             type:'business_sale', scraperReady:false },
+  { id:'local_google',   name:'Google Business Leads',  type:'operator',      scraperReady:false },
+  { id:'manual',         name:'Manual Import',          type:'all',           scraperReady:true  },
+];
+
+// ─────────────────────────────────────────────────────
+// UTIL
+// ─────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function $m(v){ return v!=null?'$'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0}):'N/A'; }
+function pct(v){ return v!=null?v+'%':'N/A'; }
+function sc(s){ return s>=80?'sh':s>=60?'sm':'sl'; }
+
+function demoTag(is_seed){
+  return is_seed ? '<span class="demo-tag">DEMO</span>' : '';
+}
+function manualTag(is_manual){
+  return is_manual ? '<span class="manual-tag">MANUAL</span>' : '';
+}
+function lnk(url, live){
+  if(live && url) return '<a style="font-size:10px;color:var(--blue);text-decoration:none;font-family:var(--font-mono)" href="'+esc(url)+'" target="_blank" rel="noopener">View listing ↗</a>';
+  return '';
+}
+
+function computeMode(data){
+  const hasSeed  = data.has_seed_data;
+  const hasLive  = data.supply_opps  && data.supply_opps.some(r=>r.url_live && !r.is_seed);
+  const hasManu  = manualItems.length > 0;
+  if (!hasSeed && !hasLive && !hasManu) return 'demo';
+  if (!hasSeed && hasLive)  return 'live';
+  if (hasManu && !hasSeed)  return 'manual';
+  if ((hasSeed || !hasLive) && hasManu) return 'mixed';
+  if (hasSeed && hasLive)   return 'mixed';
+  return 'demo';
+}
+
+function setModeBadge(mode){
+  const b = document.getElementById('mode-badge');
+  b.className = 'mode-'+mode;
+  b.textContent = mode.toUpperCase();
+}
+
+// ─────────────────────────────────────────────────────
+// NAV / SIDEBAR
+// ─────────────────────────────────────────────────────
+function nav(el){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const pid = 'panel-'+el.dataset.panel;
+  const panel = document.getElementById(pid);
+  if(panel) panel.classList.add('active');
+  closeSidebar();
+  // Lazy render
+  if(el.dataset.panel === 'workbench') renderWorkbench();
+  if(el.dataset.panel === 'flow')      renderFlow();
+  if(el.dataset.panel === 'config')    renderConfig();
+}
+function navAdd(type){
+  nav(document.querySelector('[data-panel=add]'));
+  document.getElementById('add-type').value = type;
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ─────────────────────────────────────────────────────
+// FILTER HELPERS
+// ─────────────────────────────────────────────────────
+function sf(btn, group){
+  const attr = {supply:'sf',demand:'df',operators:'opf',infra:'inf',matches:'mf'}[group];
+  document.querySelectorAll('[data-'+attr+']').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filters[group] = btn.dataset[attr];
+  const fn = {supply:renderSupply,demand:renderDemand,operators:renderOperators,infra:renderInfra,matches:renderMatches}[group];
+  fn();
+}
+
+// ─────────────────────────────────────────────────────
+// DATA LOAD
+// ─────────────────────────────────────────────────────
 async function loadData(){
-  document.getElementById('loading').style.display='block';
-  document.getElementById('app').style.display='none';
+  document.getElementById('loading').style.display = 'flex';
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   try{
-    const r=await fetch(DATA_URL+'?_='+Date.now());
-    D=await r.json();render();
-    document.getElementById('last-updated').textContent='Updated '+new Date(D.generated_at).toLocaleTimeString();
-  }catch(e){
-    document.getElementById('loading').innerHTML='<strong style="color:var(--red)">Failed to load dashboard.json</strong><div style="margin-top:8px;font-size:12px">Run export_json.py and commit docs/dashboard.json to the repo.</div>';
+    const r = await fetch(DATA_URL+'?_='+Date.now());
+    D = await r.json();
+  } catch(e){
+    document.getElementById('loading').innerHTML =
+      '<div style="color:var(--red);font-family:var(--font-mono);font-size:12px">✗ Failed to load dashboard.json<br><span style="color:var(--muted);font-size:11px;margin-top:6px;display:block">Run export_json.py and commit docs/dashboard.json</span></div>';
     return;
   }
-  document.getElementById('loading').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('loading').style.display = 'none';
+  document.querySelector('[data-panel=dashboard]').click();
+  render();
 }
 
+// ─────────────────────────────────────────────────────
+// RENDER — MAIN
+// ─────────────────────────────────────────────────────
 function render(){
-  if(D.has_seed_data)document.getElementById('seed-banner').style.display='block';
-  document.getElementById('badge-supply').textContent=D.supply_opps.length;
-  document.getElementById('badge-buyers').textContent=D.buyer_leads.length;
-  document.getElementById('badge-matched').textContent=D.matched_deals.length;
-  document.getElementById('badge-assembly').textContent=D.assembly_opps.length;
-  renderSupplyKPIs();renderSupply();renderBuyers();renderMatched();
-  renderAssembly();renderPipeline();renderPL();renderFeeds();
+  const mode = computeMode(D);
+  setModeBadge(mode);
+  document.getElementById('last-updated').textContent = new Date(D.generated_at).toLocaleString();
+
+  // Sidebar badges
+  document.getElementById('sb-supply').textContent   = D.supply_opps.length;
+  document.getElementById('sb-demand').textContent   = (D.buyer_leads||[]).length + manualItems.filter(i=>i.type==='demand').length;
+  document.getElementById('sb-operators').textContent= manualItems.filter(i=>i.type==='operator').length;
+  document.getElementById('sb-infra').textContent    = manualItems.filter(i=>i.type==='infrastructure').length;
+  document.getElementById('sb-matches').textContent  = D.matched_deals.length;
+  document.getElementById('sb-assembly').textContent = D.assembly_opps.length;
+  document.getElementById('sb-feeds').textContent    = D.feed_summary.length;
+
+  // Sidebar KPIs
+  document.getElementById('sb-hot').textContent    = D.kpi.hot_matches;
+  document.getElementById('sb-profit').textContent = $m(D.kpi.total_profit_est);
+  document.getElementById('sb-asm-count').textContent = D.kpi.assembly_count;
+
+  // Render all panels
+  renderDashboard();
+  renderSupply();
+  renderDemand();
+  renderOperators();
+  renderInfra();
+  renderMatches();
+  renderAssembly();
+  renderFeeds();
 }
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function $m(v){return v!=null?'$'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0}):'N/A';}
-function pct(v){return v!=null?v+'%':'N/A';}
-function sc(s){return s>=80?'sh':s>=60?'sm':'sl';}
-function stag(is_seed){return is_seed?'<span class="seed-tag">DEMO</span>':'';}
-function lnk(url,live){
-  if(live&&url)return'<a class="card-link" href="'+esc(url)+'" target="_blank" rel="noopener">View listing ↗</a>';
-  if(url)return'<span class="dead-link-tag">Demo URL — not live</span>';
-  return'';
+// ─────────────────────────────────────────────────────
+// DASHBOARD PANEL
+// ─────────────────────────────────────────────────────
+function renderDashboard(){
+  const k = D.kpi;
+  document.getElementById('kpi-main').innerHTML =
+    kpiCard(k.total_supply,    'Supply Items',   'cv-amber')+
+    kpiCard(D.buyer_leads.length + manualItems.filter(i=>i.type==='demand').length, 'Demand Signals','cv-teal')+
+    kpiCard(k.hot_matches,     'Hot Matches',    'cv-green')+
+    kpiCard($m(k.total_profit_est), 'Est Profit','cv-green')+
+    kpiCard(k.assembly_count,  'Assembly Opps',  'cv-purple')+
+    kpiCard(manualItems.length,'Manual Records', 'cv-blue')+
+    kpiCard(D.kpi.avg_score,   'Avg Score',      'cv-amber')+
+    kpiCard(D.feed_summary.length,'Active Feeds','cv-teal');
+
+  // Top 5 matches
+  const top5 = D.matched_deals.slice(0,5);
+  document.getElementById('dash-matches').innerHTML = top5.length
+    ? top5.map(r=>matchCardHtml(r)).join('')
+    : '<div class="empty"><strong>No matched deals yet</strong>Add supply and demand items, then run matcher.py</div>';
+
+  // Top 3 assembly
+  const top3asm = D.assembly_opps.slice(0,3);
+  document.getElementById('dash-assembly').innerHTML = top3asm.length
+    ? top3asm.map(r=>asmCardHtml(r)).join('')
+    : '<div class="empty"><strong>No assembly opportunities yet</strong></div>';
 }
 
-function renderSupplyKPIs(){
-  const k=D.kpi;
-  document.getElementById('kpi-supply').innerHTML=
-    '<div class="kpi-card"><div class="kpi-value kv-blue">'+k.total_supply+'</div><div class="kpi-label">Supply Items</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-green">'+k.hot_matches+'</div><div class="kpi-label">Hot Matches</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-teal">'+$m(k.total_profit_est)+'</div><div class="kpi-label">Est Profit</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-purple">'+k.assembly_count+'</div><div class="kpi-label">Assembly Opps</div></div>';
+function kpiCard(val, lbl, cls){
+  return '<div class="kpi-card"><div class="kpi-val '+cls+'">'+val+'</div><div class="kpi-lbl">'+lbl+'</div></div>';
 }
 
+// ─────────────────────────────────────────────────────
+// SUPPLY PANEL
+// ─────────────────────────────────────────────────────
 function renderSupply(){
-  const q=(document.getElementById('supply-search').value||'').toLowerCase();
-  let rows=D.supply_opps;
-  if(supplyFilter!=='all')rows=rows.filter(r=>r.source===supplyFilter);
-  if(q)rows=rows.filter(r=>(r.title+r.source+r.location+r.category).toLowerCase().includes(q));
-  const tb=rows.reduce((a,r)=>a+(r.price_est||0),0);
-  document.getElementById('supply-totals').innerHTML=
-    'Showing <span class="tv">'+rows.length+'</span> &nbsp; Est total buy: <span class="tv">'+$m(tb)+'</span>'+
-    (D.has_seed_data?' &nbsp; <span style="color:var(--amber)">⚠ Includes demo data</span>':'');
-  if(!rows.length){document.getElementById('supply-list').innerHTML='<div class="empty"><strong>No supply items</strong>Run scanner.py to pull live listings.</div>';return;}
-  document.getElementById('supply-list').innerHTML=rows.map(r=>
-    '<div class="supply-card">'+
-      '<div class="card-top"><div class="card-title">'+esc(r.title)+stag(r.is_seed)+'</div></div>'+
-      '<div class="card-meta">'+
-        '<span class="tag">'+esc(r.source.toUpperCase())+'</span>'+
-        (r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+
-        (r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+
-        (r.end_date?'<span class="tag">Ends '+r.end_date+'</span>':'')+
-        (r.status!=='new'?'<span class="tag" style="color:var(--green)">'+r.status+'</span>':'')+
+  const q = (document.getElementById('supply-search').value||'').toLowerCase();
+  let rows = [...D.supply_opps];
+  const mSup = manualItems.filter(i=>i.type==='supply');
+  rows = [...rows, ...mSup.map(manualToSupply)];
+  const f = filters.supply;
+  if(f !== 'all') rows = rows.filter(r=> f==='manual' ? r.is_manual : r.source===f);
+  if(q) rows = rows.filter(r=>(r.title+r.source+r.location+r.category).toLowerCase().includes(q));
+  const tb = rows.reduce((a,r)=>a+(r.price_est||0),0);
+  document.getElementById('supply-totals').innerHTML =
+    'Showing <span class="tv">'+rows.length+'</span> &nbsp; Total buy est: <span class="tv">'+$m(tb)+'</span>'+
+    (D.has_seed_data ? ' &nbsp; <span style="color:var(--red);font-size:10px;font-family:var(--font-mono)">⚠ includes DEMO data</span>' : '');
+  document.getElementById('supply-list').innerHTML = rows.length
+    ? rows.map(r=>supplyCardHtml(r)).join('')
+    : '<div class="empty"><strong>No supply items</strong><br>Run scanner.py or <code>+ Add manually</code></div>';
+}
+
+function supplyCardHtml(r){
+  return '<div class="card">'+
+    '<div class="card-top"><div class="card-title">'+esc(r.title)+' '+demoTag(r.is_seed)+manualTag(r.is_manual)+'</div></div>'+
+    '<div class="card-meta">'+
+      '<span class="tag">'+esc((r.source||'').toUpperCase())+'</span>'+
+      (r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+
+      (r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+
+      (r.end_date?'<span class="tag tag-amber">Ends '+r.end_date+'</span>':'')+
+      (r.status&&r.status!=='new'?'<span class="tag tag-green">'+r.status+'</span>':'')+
+    '</div>'+
+    '<div class="card-nums">'+
+      '<span class="n-buy">List: <strong>'+esc(r.price_raw||'N/A')+'</strong></span>'+
+      (r.price_est?'<span class="n-buy">Est: '+$m(r.price_est)+'</span>':'')+
+    '</div>'+
+    (r.keywords&&r.keywords.length?'<div style="margin-top:4px;font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+r.keywords.slice(0,6).map(esc).join(', ')+'</div>':'')+
+    (r.notes?'<div style="margin-top:4px;font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+
+    lnk(r.url, r.url_live)+
+  '</div>';
+}
+
+function manualToSupply(m){
+  return {
+    id: m.id, title: m.title, source: m.source||'manual', url: m.url||'',
+    url_live: !!(m.url&&m.url.startsWith('http')), price_raw: m.price||'',
+    price_est: parseFloat((m.price||'').replace(/[^0-9.]/g,''))||null,
+    location: m.location||'', category: m.category||'',
+    end_date:'', scraped_at: m.added_at||'', keywords:[], status:'new',
+    is_seed: false, is_manual: true, notes: m.notes||''
+  };
+}
+
+// ─────────────────────────────────────────────────────
+// DEMAND PANEL
+// ─────────────────────────────────────────────────────
+function renderDemand(){
+  const q = (document.getElementById('demand-search').value||'').toLowerCase();
+  let rows = [...(D.buyer_leads||[])];
+  // Add manual demand items
+  const mDem = manualItems.filter(i=>i.type==='demand').map(m=>({
+    id:m.id, name:m.title, role:m.subtype||'iso', category:m.category||'',
+    location:m.location||'', zip:'', phone:'', website:'', website_live:false,
+    rating:null, confidence:50, source_zip:'', status:'new', is_seed:false, is_manual:true,
+    price:m.price||'', notes:m.notes||''
+  }));
+  rows = [...rows, ...mDem];
+  const f = filters.demand;
+  if(f !== 'all') rows = rows.filter(r=> f==='manual' ? r.is_manual : r.role===f);
+  if(q) rows = rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
+  document.getElementById('demand-totals').innerHTML = 'Showing <span class="tv">'+rows.length+'</span>';
+  document.getElementById('demand-list').innerHTML = rows.length
+    ? rows.map(r=>demandCardHtml(r)).join('')
+    : '<div class="empty"><strong>No demand signals yet</strong><br>Add ISO / WTB posts or run Craigslist wanted scraper<br><code>+ Add demand signal</code></div>';
+}
+
+function demandCardHtml(r){
+  const roleColor = {iso:'teal',wtb:'teal',service_request:'blue',buyer:'teal',supplier:'amber'}[r.role]||'muted';
+  return '<div class="demand-card">'+
+    '<div class="card-top">'+
+      '<div class="card-title">'+esc(r.name)+' '+manualTag(r.is_manual)+demoTag(r.is_seed)+'</div>'+
+      '<span class="tag tag-'+roleColor+'" style="flex-shrink:0;font-size:10px">'+esc((r.role||'ISO').toUpperCase())+'</span>'+
+    '</div>'+
+    '<div class="card-meta">'+
+      (r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+
+      (r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+
+    '</div>'+
+    (r.price?'<div style="font-size:11px;color:var(--amber);font-family:var(--font-mono)">Budget: '+esc(r.price)+'</div>':'')+
+    (r.notes?'<div style="margin-top:4px;font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+
+    (r.phone?'<div style="margin-top:4px;font-size:11px"><a href="tel:'+esc(r.phone)+'" style="color:var(--blue)">'+esc(r.phone)+'</a></div>':'')+
+    (r.confidence?'<div style="margin-top:6px;display:flex;align-items:center;gap:6px;font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+
+      '<div style="height:3px;border-radius:2px;background:var(--teal);width:'+r.confidence+'px;max-width:120px"></div>'+r.confidence+'%</div>':'')+
+  '</div>';
+}
+
+// ─────────────────────────────────────────────────────
+// OPERATORS PANEL
+// ─────────────────────────────────────────────────────
+function renderOperators(){
+  const q = (document.getElementById('operators-search').value||'').toLowerCase();
+  let rows = manualItems.filter(i=>i.type==='operator').map(m=>({
+    id:m.id, name:m.title, subtype:m.subtype||'service', category:m.category||'',
+    location:m.location||'', notes:m.notes||'', is_manual:true, price:m.price||''
+  }));
+  const f = filters.operators;
+  if(f !== 'all') rows = rows.filter(r=> f==='manual' ? r.is_manual : r.subtype===f);
+  if(q) rows = rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
+  document.getElementById('operators-totals').innerHTML = 'Showing <span class="tv">'+rows.length+'</span>';
+  document.getElementById('operators-list').innerHTML = rows.length
+    ? rows.map(r=>'<div class="operator-card">'+
+        '<div class="card-top"><div class="card-title">'+esc(r.name)+' '+manualTag(r.is_manual)+'</div>'+
+        '<span class="tag tag-blue" style="flex-shrink:0;font-size:10px">'+esc((r.subtype||'OPERATOR').toUpperCase())+'</span></div>'+
+        '<div class="card-meta">'+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+'</div>'+
+        (r.notes?'<div style="font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+
+      '</div>').join('')
+    : '<div class="empty"><strong>No operators yet</strong><br>Add contractors, resellers, service providers<br><code>+ Add operator</code></div>';
+}
+
+// ─────────────────────────────────────────────────────
+// INFRA PANEL
+// ─────────────────────────────────────────────────────
+function renderInfra(){
+  const q = (document.getElementById('infra-search').value||'').toLowerCase();
+  let rows = manualItems.filter(i=>i.type==='infrastructure').map(m=>({
+    id:m.id, name:m.title, subtype:m.subtype||'space', category:m.category||'',
+    location:m.location||'', notes:m.notes||'', is_manual:true, price:m.price||''
+  }));
+  const f = filters.infra;
+  if(f !== 'all') rows = rows.filter(r=> f==='manual' ? r.is_manual : r.subtype===f);
+  if(q) rows = rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
+  document.getElementById('infra-totals').innerHTML = 'Showing <span class="tv">'+rows.length+'</span>';
+  document.getElementById('infra-list').innerHTML = rows.length
+    ? rows.map(r=>'<div class="infra-card">'+
+        '<div class="card-top"><div class="card-title">'+esc(r.name)+' '+manualTag(r.is_manual)+'</div>'+
+        '<span class="tag tag-amber" style="flex-shrink:0;font-size:10px">'+esc((r.subtype||'INFRA').toUpperCase())+'</span></div>'+
+        '<div class="card-meta">'+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+'</div>'+
+        (r.price?'<div style="font-size:11px;color:var(--amber);font-family:var(--font-mono)">'+esc(r.price)+'</div>':'')+
+        (r.notes?'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+esc(r.notes)+'</div>':'')+
+      '</div>').join('')
+    : '<div class="empty"><strong>No infrastructure yet</strong><br>Add spaces, vehicles, storage, facilities<br><code>+ Add infrastructure</code></div>';
+}
+
+// ─────────────────────────────────────────────────────
+// MATCHES PANEL
+// ─────────────────────────────────────────────────────
+function renderMatches(){
+  const q = (document.getElementById('matches-search').value||'').toLowerCase();
+  let rows = [...D.matched_deals];
+  const f = filters.matches;
+  if(f === 'hi')   rows = rows.filter(r=>r.score>=80);
+  if(f === 'med')  rows = rows.filter(r=>r.score>=60&&r.score<80);
+  if(f === 'live') rows = rows.filter(r=>r.supply_url_live);
+  if(q) rows = rows.filter(r=>(r.supply_title+r.buyer_name+r.supply_source+r.supply_location).toLowerCase().includes(q));
+  const tp = rows.reduce((a,r)=>a+(r.profit_est||0),0);
+  const ts = rows.reduce((a,r)=>a+(r.sell_est||0),0);
+  document.getElementById('matches-totals').innerHTML =
+    'Showing <span class="tv">'+rows.length+'</span> &nbsp; Sell pipeline: <span class="tv">'+$m(ts)+'</span> &nbsp; Est profit: <span class="tg2">'+$m(tp)+'</span>';
+  document.getElementById('matches-list').innerHTML = rows.length
+    ? rows.map(r=>matchCardHtml(r)).join('')
+    : '<div class="empty"><strong>No matched deals</strong><br>Run matcher.py after scanner.py</div>';
+}
+
+function matchCardHtml(r){
+  return '<div class="card">'+
+    '<div class="card-top"><div class="card-title">'+esc(r.supply_title)+' '+demoTag(r.is_seed)+'</div><span class="score-badge '+sc(r.score)+'">'+r.score+'</span></div>'+
+    '<div class="deal-sides">'+
+      '<div class="side-box side-supply">'+
+        '<div class="side-label">Supply / Buy</div>'+
+        '<div>'+esc(r.supply_source.toUpperCase())+'</div>'+
+        '<div style="color:var(--muted);font-size:10px;font-family:var(--font-mono)">'+esc(r.supply_location||'—')+'</div>'+
+        '<div style="margin-top:3px"><strong>Buy: '+$m(r.buy_price)+'</strong>'+(r.buy_price_raw?' ('+esc(r.buy_price_raw)+')':'')+'</div>'+
+        (r.supply_end_date?'<div style="color:var(--amber);font-size:10px;font-family:var(--font-mono)">Ends '+r.supply_end_date+'</div>':'')+
+        lnk(r.supply_url, r.supply_url_live)+
       '</div>'+
-      '<div class="card-nums"><span class="n-buy">List: <strong>'+esc(r.price_raw||'N/A')+'</strong></span>'+(r.price_est?'<span class="n-buy">Est: '+$m(r.price_est)+'</span>':'')+'</div>'+
-      (r.keywords&&r.keywords.length?'<div style="margin-top:5px;font-size:11px;color:var(--hint)">'+r.keywords.slice(0,6).map(esc).join(', ')+'</div>':'')+
-      lnk(r.url,r.url_live)+
-    '</div>'
-  ).join('');
-}
-
-function renderBuyers(){
-  const q=(document.getElementById('buyers-search').value||'').toLowerCase();
-  let rows=D.buyer_leads;
-  if(buyerFilter!=='all')rows=rows.filter(r=>r.role===buyerFilter);
-  if(q)rows=rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
-  const nS=rows.filter(r=>r.role==='supplier').length,nB=rows.filter(r=>r.role==='buyer').length;
-  document.getElementById('buyers-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span> &nbsp; Suppliers: <span class="tv">'+nS+'</span> &nbsp; Buyers: <span class="tv">'+nB+'</span>';
-  if(!rows.length){document.getElementById('buyers-list').innerHTML='<div class="empty"><strong>No leads yet</strong>Run leadgen.py to find contacts.</div>';return;}
-  document.getElementById('buyers-list').innerHTML=rows.map(r=>
-    '<div class="lead-card">'+
-      '<div class="lead-name">'+esc(r.name)+'</div>'+
-      '<div class="lead-meta"><span class="lead-role-'+r.role+'">'+(r.role||'').toUpperCase()+'</span> · '+esc(r.category)+(r.location?' · '+esc(r.location):'')+(r.zip?' · '+r.zip:'')+'</div>'+
-      (r.phone?'<div class="lead-meta" style="margin-top:3px"><a href="tel:'+esc(r.phone)+'" style="color:var(--blue)">'+esc(r.phone)+'</a></div>':'')+
-      (r.website_live?'<div class="lead-meta" style="margin-top:2px"><a href="'+esc(r.website)+'" target="_blank" style="color:var(--blue)" rel="noopener">'+esc(r.website.replace(/^https?:\/\//,''))+'</a></div>':'')+
-      (r.confidence?'<div style="margin-top:6px"><div class="conf-bar-wrap"><div class="conf-bar" style="width:'+r.confidence+'%"></div></div><span style="font-size:10px;color:var(--muted)">'+r.confidence+'% confidence</span></div>':'')+
-    '</div>'
-  ).join('');
-}
-
-function renderMatched(){
-  const q=(document.getElementById('matched-search').value||'').toLowerCase();
-  let rows=D.matched_deals;
-  if(matchFilter==='hi')rows=rows.filter(r=>r.score>=80);
-  if(matchFilter==='med')rows=rows.filter(r=>r.score>=60&&r.score<80);
-  if(matchFilter==='live')rows=rows.filter(r=>r.supply_url_live);
-  if(q)rows=rows.filter(r=>(r.supply_title+r.buyer_name+r.supply_source+r.supply_location).toLowerCase().includes(q));
-  const tp=rows.reduce((a,r)=>a+(r.profit_est||0),0),ts=rows.reduce((a,r)=>a+(r.sell_est||0),0);
-  document.getElementById('matched-totals').innerHTML=
-    'Showing <span class="tv">'+rows.length+'</span> &nbsp; '+
-    'Sell pipeline: <span class="tv">'+$m(ts)+'</span> &nbsp; '+
-    'Est profit: <span class="tg2">'+$m(tp)+'</span>';
-  if(!rows.length){document.getElementById('matched-list').innerHTML='<div class="empty"><strong>No matched deals</strong>Run matcher.py after scanner.py.</div>';return;}
-  document.getElementById('matched-list').innerHTML=rows.map(r=>
-    '<div class="deal-card">'+
-      '<div class="card-top"><div class="card-title">'+esc(r.supply_title)+stag(r.is_seed)+'</div><span class="score-badge '+sc(r.score)+'">'+r.score+'</span></div>'+
-      '<div class="deal-sides">'+
-        '<div class="side-box side-supply">'+
-          '<div class="side-label">Supply / Buy</div>'+
-          '<div>'+esc(r.supply_source.toUpperCase())+'</div>'+
-          '<div style="color:var(--muted);font-size:11px">'+esc(r.supply_location||'—')+'</div>'+
-          '<div style="margin-top:4px"><strong>Buy: '+$m(r.buy_price)+'</strong>'+(r.buy_price_raw?' ('+esc(r.buy_price_raw)+')':'')+'</div>'+
-          (r.supply_end_date?'<div style="color:var(--amber);font-size:11px">Ends '+r.supply_end_date+'</div>':'')+
-          lnk(r.supply_url,r.supply_url_live)+
-        '</div>'+
-        '<div class="side-box side-buyer">'+
-          '<div class="side-label">Demand / Sell</div>'+
-          '<div><strong>'+esc(r.buyer_name)+'</strong></div>'+
-          '<div style="margin-top:4px">'+
-            '<div>Sell est: <strong style="color:var(--teal)">'+$m(r.sell_est)+'</strong></div>'+
-            '<div>Spread: <strong style="color:var(--amber)">'+$m(r.spread)+'</strong></div>'+
-            '<div>Margin: <strong style="color:var(--green)">'+pct(r.margin_pct)+'</strong></div>'+
-            '<div>Est profit: <strong style="color:var(--green)">'+$m(r.profit_est)+'</strong></div>'+
-          '</div>'+
+      '<div class="side-box side-buyer">'+
+        '<div class="side-label">Demand / Sell</div>'+
+        '<div><strong>'+esc(r.buyer_name)+'</strong></div>'+
+        '<div style="margin-top:3px;font-family:var(--font-mono);font-size:11px">'+
+          'Sell est: <strong style="color:var(--teal)">'+$m(r.sell_est)+'</strong><br>'+
+          'Spread: <strong style="color:var(--amber)">'+$m(r.spread)+'</strong><br>'+
+          'Margin: <strong style="color:var(--green)">'+pct(r.margin_pct)+'</strong><br>'+
+          'Profit: <strong style="color:var(--green)">'+$m(r.profit_est)+'</strong>'+
         '</div>'+
       '</div>'+
-      (r.match_reason?'<div class="reason-box">📌 '+esc(r.match_reason)+'</div>':'')+
-      (r.next_action?'<div class="action-box"><div class="action-label">Next action</div>'+esc(r.next_action)+'</div>':'')+
-    '</div>'
-  ).join('');
+    '</div>'+
+    (r.match_reason?'<div class="reason-box">📌 '+esc(r.match_reason)+'</div>':'')+
+    (r.next_action?'<div class="action-box"><div class="action-label">Next action</div>'+esc(r.next_action)+'</div>':'')+
+  '</div>';
 }
 
+// ─────────────────────────────────────────────────────
+// ASSEMBLY PANEL
+// ─────────────────────────────────────────────────────
 function renderAssembly(){
-  const rows=D.assembly_opps;
-  if(!rows.length){document.getElementById('assembly-list').innerHTML='<div class="empty"><strong>No assembly opportunities yet</strong>Run matcher.py with data containing multiple item categories.</div>';return;}
-  document.getElementById('assembly-list').innerHTML=rows.map(r=>
-    '<div class="asm-card">'+
-      '<div class="card-top"><div class="card-title">'+esc(r.title)+stag(r.is_seed)+'</div><span class="asm-conf">'+r.confidence+'% confidence</span></div>'+
-      '<div class="asm-desc">'+esc(r.description)+'</div>'+
-      '<div class="asm-items">'+(r.categories||[]).map(c=>'<span class="asm-item">'+esc(c)+'</span>').join('')+'</div>'+
-      '<div class="card-nums">'+
-        '<span class="n-buy">Total buy: <strong>'+$m(r.total_buy)+'</strong></span>'+
-        '<span class="n-sell">Revenue est: <strong>'+$m(r.revenue_est)+'</strong></span>'+
-        '<span class="n-profit">Profit est: <strong>'+$m(r.profit_est)+'</strong></span>'+
-      '</div>'+
-      (r.next_action?'<div class="asm-action"><span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#818cf8">Next Action</span><br>'+esc(r.next_action)+'</div>':'')+
-    '</div>'
-  ).join('');
+  document.getElementById('assembly-list').innerHTML = D.assembly_opps.length
+    ? D.assembly_opps.map(r=>asmCardHtml(r)).join('')
+    : '<div class="empty"><strong>No assembly opportunities yet</strong><br>Run matcher.py with data from multiple categories</div>';
 }
 
-function renderPipeline(){
-  const rows=D.pipeline;
-  if(!rows.length){document.getElementById('pipeline-tbody').innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">No data yet</td></tr>';return;}
-  let tB=0,tP=0,tD=0;
-  document.getElementById('pipeline-tbody').innerHTML=rows.map(r=>{
-    tB+=r.total_buy||0;tP+=r.total_profit||0;tD+=r.count||0;
-    return'<tr><td>'+esc(r.source)+'</td><td class="r">'+r.count+'</td><td class="r ta">'+r.avg_score+'</td><td class="r tm">'+$m(r.total_buy)+'</td><td class="r tg">'+$m(r.total_profit)+'</td></tr>';
-  }).join('');
-  document.getElementById('pipeline-kpis').innerHTML=
-    '<div class="kpi-card"><div class="kpi-value kv-blue">'+tD+'</div><div class="kpi-label">Total Deals</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-amber">'+$m(tB)+'</div><div class="kpi-label">Total Buy</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-green">'+$m(tP)+'</div><div class="kpi-label">Est Profit</div></div>'+
-    '<div class="kpi-card"><div class="kpi-value kv-teal">'+$m(D.kpi.total_sell_est)+'</div><div class="kpi-label">Total Sell Est</div></div>';
+function asmCardHtml(r){
+  return '<div class="asm-card">'+
+    '<div class="card-top"><div class="card-title">'+esc(r.title)+' '+demoTag(r.is_seed)+'</div><span class="asm-conf">'+r.confidence+'% confidence</span></div>'+
+    '<div class="asm-desc">'+esc(r.description)+'</div>'+
+    '<div class="asm-items">'+(r.categories||[]).map(c=>'<span class="asm-item">'+esc(c)+'</span>').join('')+'</div>'+
+    '<div class="card-nums">'+
+      '<span class="n-buy">Total buy: <strong>'+$m(r.total_buy)+'</strong></span>'+
+      '<span class="n-sell">Revenue est: <strong>'+$m(r.revenue_est)+'</strong></span>'+
+      '<span class="n-profit">Profit est: <strong>'+$m(r.profit_est)+'</strong></span>'+
+    '</div>'+
+    (r.next_action?'<div class="asm-action"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);font-family:var(--font-mono);margin-bottom:2px">Next Action</div>'+esc(r.next_action)+'</div>':'')+
+  '</div>';
 }
 
-function renderPL(){
-  const rows=D.pl_summary;
-  if(!rows.length){document.getElementById('pl-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No P&L data yet</td></tr>';return;}
-  document.getElementById('pl-tbody').innerHTML=rows.map(r=>
-    '<tr><td>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.deal_count+'</td><td class="r ta">'+r.avg_score+'</td><td class="r tm">'+$m(r.total_buy)+'</td><td class="r tt">'+$m(r.total_sell_est)+'</td><td class="r tg">'+$m(r.total_profit_est)+'</td><td class="r ta">'+pct(r.avg_margin_pct)+'</td></tr>'
-  ).join('');
-}
-
+// ─────────────────────────────────────────────────────
+// FEED HEALTH + P&L
+// ─────────────────────────────────────────────────────
 function renderFeeds(){
-  const rows=D.feed_summary;
-  if(!rows.length){document.getElementById('feeds-tbody').innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No feed data yet</td></tr>';return;}
-  document.getElementById('feeds-tbody').innerHTML=rows.map(r=>{
-    const dc=r.status==='matched'?'fdot-ok':r.status==='new'?'fdot-warn':'fdot-err';
-    const ts=r.last_scraped?r.last_scraped.slice(0,16).replace('T',' ')+' UTC':'—';
-    return'<tr><td><span class="fdot '+dc+'"></span>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.count+'</td><td>'+ts+'</td></tr>';
+  // Feed health
+  const feeds = D.feed_summary;
+  document.getElementById('feeds-tbody').innerHTML = feeds.length
+    ? feeds.map(r=>{
+        const dc = r.status==='matched'?'fdot-ok':r.status==='new'?'fdot-warn':'fdot-err';
+        const ts = r.last_scraped?r.last_scraped.slice(0,16).replace('T',' ')+' UTC':'—';
+        const src = DEFAULT_SOURCES.find(s=>s.id===r.source||s.name.toLowerCase()===r.source)||{};
+        return '<tr>'+
+          '<td><span class="fdot '+dc+'"></span>'+esc(r.source)+'</td>'+
+          '<td>'+esc(r.status)+'</td>'+
+          '<td class="r">'+r.count+'</td>'+
+          '<td style="font-family:var(--font-mono);font-size:10px">'+ts+'</td>'+
+          '<td><span class="tag" style="font-size:9px">'+esc(src.type||'—')+'</span></td>'+
+        '</tr>';
+      }).join('')
+    : '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--font-mono)">No feed data — run scanner.py</td></tr>';
+
+  // P&L
+  document.getElementById('pl-tbody').innerHTML = (D.pl_summary||[]).length
+    ? D.pl_summary.map(r=>'<tr>'+
+        '<td>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td>'+
+        '<td class="r">'+r.deal_count+'</td>'+
+        '<td class="r ta">'+r.avg_score+'</td>'+
+        '<td class="r tm">'+$m(r.total_buy)+'</td>'+
+        '<td class="r tt">'+$m(r.total_sell_est)+'</td>'+
+        '<td class="r tg">'+$m(r.total_profit_est)+'</td>'+
+        '<td class="r ta">'+pct(r.avg_margin_pct)+'</td>'+
+      '</tr>').join('')
+    : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No P&L data yet</td></tr>';
+}
+
+// ─────────────────────────────────────────────────────
+// MATCH WORKBENCH
+// ─────────────────────────────────────────────────────
+function renderWorkbench(){
+  if(!D) return;
+  const allItems = buildWbItems();
+  const filtered = wbTypeFilter === 'all' ? allItems
+    : allItems.filter(i=>i.lane===wbTypeFilter);
+
+  document.getElementById('wb-items').innerHTML = filtered.length
+    ? filtered.map(i=>'<div class="wb-item'+(wbSelected&&wbSelected.id===i.id?' selected':'')+'" onclick="wbSelect(\''+i.id+'\')" data-wbid="'+i.id+'">'+
+        '<div class="wb-item-title">'+esc(i.title)+'</div>'+
+        '<div class="wb-item-meta">'+esc(i.lane.toUpperCase())+' · '+esc(i.source||'manual')+(i.price?' · '+esc(i.price):'')+'</div>'+
+      '</div>').join('')
+    : '<div class="wb-placeholder">No items to display</div>';
+}
+
+function buildWbItems(){
+  const items = [];
+  D.supply_opps.forEach(r=>items.push({id:r.id, title:r.title, lane:'supply', source:r.source, price:r.price_raw, is_seed:r.is_seed}));
+  (D.buyer_leads||[]).forEach(r=>items.push({id:r.id, title:r.name, lane:'demand', source:r.source_zip, price:''}));
+  manualItems.forEach(m=>items.push({id:m.id, title:m.title, lane:m.type, source:'manual', price:m.price}));
+  return items;
+}
+
+function wbFilter(type, btn){
+  wbTypeFilter = type;
+  document.getElementById('wbt-all').classList.toggle('active', type==='all');
+  document.getElementById('wbt-supply').classList.toggle('active', type==='supply');
+  document.getElementById('wbt-demand').classList.toggle('active', type==='demand');
+  renderWorkbench();
+}
+
+function wbSelect(id){
+  const allItems = buildWbItems();
+  wbSelected = allItems.find(i=>i.id===id);
+  renderWorkbench();
+  if(!wbSelected) return;
+  document.getElementById('wb-selected-title').textContent = '— '+wbSelected.title.slice(0,30);
+
+  // Find possible matches
+  const suggestions = [];
+
+  if(wbSelected.lane === 'supply'){
+    // Suggest matched deals for this supply item
+    D.matched_deals.filter(m=>m.listing_id===id||m.supply_title===wbSelected.title).forEach(m=>{
+      suggestions.push({type:'buyer', label:m.buyer_name, meta:'Score '+m.score+' · Profit '+$m(m.profit_est), reason:m.match_reason, action:m.next_action});
+    });
+    // Suggest assembly opps that include this item
+    D.assembly_opps.filter(a=>(a.listing_ids||[]).includes(id)||(a.categories||[]).some(c=>wbSelected.title.toLowerCase().includes(c.toLowerCase()))).forEach(a=>{
+      suggestions.push({type:'assembly', label:a.title, meta:a.confidence+'% confidence · '+$m(a.profit_est)+' profit est', reason:a.description, action:a.next_action});
+    });
+    // Suggest demand/ISO signals
+    manualItems.filter(m=>m.type==='demand').forEach(m=>{
+      const overlap = keywordOverlap(wbSelected.title, m.title);
+      if(overlap > 0) suggestions.push({type:'buyer', label:m.title, meta:'Manual demand · '+overlap+' keyword match', reason:'Manual demand signal', action:'Reach out directly'});
+    });
+  } else if(wbSelected.lane === 'demand'){
+    // Match demand against supply
+    D.supply_opps.forEach(s=>{
+      const overlap = keywordOverlap(wbSelected.title, s.title);
+      if(overlap > 0) suggestions.push({type:'seller', label:s.title, meta:esc(s.source)+' · '+$m(s.price_est), reason:overlap+' shared keyword(s)', action:'Compare price, confirm condition'});
+    });
+    D.matched_deals.filter(m=>m.buyer_name===wbSelected.title).forEach(m=>{
+      suggestions.push({type:'seller', label:m.supply_title, meta:'Score '+m.score+' · '+$m(m.buy_price), reason:m.match_reason, action:m.next_action});
+    });
+  }
+
+  // Suggest operators from manual items
+  manualItems.filter(m=>m.type==='operator').forEach(op=>{
+    if(keywordOverlap(wbSelected.title, op.title) > 0 || op.category && wbSelected.title.toLowerCase().includes(op.category.toLowerCase()))
+      suggestions.push({type:'operator', label:op.title, meta:'Operator · '+op.location, reason:'Capability match', action:'Contact for execution'});
+  });
+
+  document.getElementById('wb-matches').innerHTML = suggestions.length
+    ? suggestions.map((s,i)=>'<div class="wb-match">'+
+        '<div class="wb-match-header">'+
+          '<span class="wb-match-type wmt-'+s.type+'">'+s.type.toUpperCase()+'</span>'+
+          '<button class="wb-approve-btn" onclick="wbApprove('+i+')">✓ Approve</button>'+
+        '</div>'+
+        '<div style="font-weight:600;font-size:12px;margin-bottom:2px">'+esc(s.label)+'</div>'+
+        '<div style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+esc(s.meta)+'</div>'+
+        (s.reason?'<div style="font-size:10px;color:var(--muted);margin-top:3px;border-left:2px solid var(--border2);padding-left:6px">'+esc(s.reason.slice(0,120))+'</div>':'')+
+        (s.action?'<div style="font-size:10px;color:var(--green);margin-top:3px;font-family:var(--font-mono)">→ '+esc(s.action.slice(0,100))+'</div>':'')+
+      '</div>').join('')
+    : '<div class="wb-placeholder">No matches found for this item.<br>Add demand or operator records to see suggestions.</div>';
+}
+
+function keywordOverlap(a, b){
+  const stopwords = new Set(['the','a','an','and','or','for','of','in','to','with','at','by','from']);
+  const wordsA = a.toLowerCase().split(/\W+/).filter(w=>w.length>2&&!stopwords.has(w));
+  const wordsB = b.toLowerCase().split(/\W+/).filter(w=>w.length>2&&!stopwords.has(w));
+  return wordsA.filter(w=>wordsB.includes(w)).length;
+}
+
+function wbApprove(idx){
+  alert('✓ Match noted. In a future version this will create a confirmed match record in the database.');
+}
+
+// ─────────────────────────────────────────────────────
+// VISUAL FLOW BUILDER
+// ─────────────────────────────────────────────────────
+function renderFlow(){
+  if(!D) return;
+  const stage = document.getElementById('flow-stage');
+  const rows = [];
+
+  // Build one flow row per matched deal (top 6)
+  D.matched_deals.slice(0,6).forEach(m=>{
+    const supplyNode = flowNode('fn-supply','SUPPLY',m.supply_title.slice(0,30),m.supply_source+' · '+$m(m.buy_price));
+    const demandNode = flowNode('fn-demand','DEMAND',m.buyer_name.slice(0,30),'Sell est: '+$m(m.sell_est));
+    const dealNode   = flowNode('fn-deal','DEAL','Profit est: '+$m(m.profit_est),'Score '+m.score+' · '+pct(m.margin_pct)+' margin');
+
+    // Check if any operator matches this supply item
+    const opMatch = manualItems.find(op=>op.type==='operator'&&keywordOverlap(m.supply_title,op.title)>0);
+    const opNode = opMatch
+      ? flowNode('fn-operator','OPERATOR',opMatch.title.slice(0,30),opMatch.location||'manual')
+      : null;
+
+    let row = '<div class="flow-row">'+supplyNode+arrow();
+    if(opNode) row += opNode+arrow();
+    row += demandNode+arrow()+dealNode+'</div>';
+    rows.push(row);
+  });
+
+  // Assembly opps
+  D.assembly_opps.slice(0,3).forEach(a=>{
+    const cats = (a.categories||[]).slice(0,2).map(c=>flowNode('fn-supply','SUPPLY',c.slice(0,30),''));
+    const asmNode = flowNode('fn-assembly','ASSEMBLY',a.title.slice(0,30),'$'+$m(a.revenue_est)+' rev est');
+    let row = '<div class="flow-row">'+cats.join(arrow())+(cats.length?arrow():'')+asmNode+'</div>';
+    rows.push(row);
+  });
+
+  // Manual items
+  const manSupply = manualItems.filter(m=>m.type==='supply').slice(0,3);
+  const manDemand = manualItems.filter(m=>m.type==='demand').slice(0,3);
+  if(manSupply.length && manDemand.length){
+    manSupply.forEach((s,i)=>{
+      const d = manDemand[i%manDemand.length];
+      const row = '<div class="flow-row">'+
+        flowNode('fn-supply','MANUAL SUPPLY',s.title.slice(0,30),s.price||'manual')+arrow()+
+        flowNode('fn-demand','MANUAL DEMAND',d.title.slice(0,30),d.location||'manual')+
+      '</div>';
+      rows.push(row);
+    });
+  }
+
+  stage.innerHTML = rows.length
+    ? rows.join('')
+    : '<div class="empty" style="padding:40px"><strong>No flow data yet</strong><br>Add supply and demand items to build flows</div>';
+}
+
+function flowNode(cls, type, title, meta){
+  return '<div class="flow-node '+cls+'">'+
+    '<div class="flow-node-type">'+esc(type)+'</div>'+
+    '<div class="flow-node-title">'+esc(title)+'</div>'+
+    (meta?'<div class="flow-node-meta">'+esc(meta)+'</div>':'')+
+  '</div>';
+}
+
+function arrow(){
+  return '<div class="flow-arrow"><svg viewBox="0 0 40 14" fill="none"><line x1="0" y1="7" x2="34" y2="7" stroke="#2e3248" stroke-width="1.5"/><polygon points="34,3 40,7 34,11" fill="#2e3248"/></svg></div>';
+}
+
+// ─────────────────────────────────────────────────────
+// ADD ITEM
+// ─────────────────────────────────────────────────────
+function parsePaste(){
+  const raw = document.getElementById('paste-input').value.trim();
+  if(!raw) return;
+
+  // Simple heuristic parser
+  const lc = raw.toLowerCase();
+  let type = 'supply';
+  if(/\biso\b|\bwanted\b|\bwtb\b|\blooking for\b|\bneed(ing)?\b|\bwilling to pay\b/.test(lc)) type = 'demand';
+  else if(/\boffering\b|\bprovid(e|ing)\b|\bservice\b|\bwe do\b|\bcontract/.test(lc)) type = 'operator';
+
+  const priceMatch = raw.match(/\$[\d,]+(?:\.\d{2})?/);
+  const locationMatch = raw.match(/([A-Z][a-zA-Z\s]+),\s*([A-Z]{2})\b|(\d{5})/);
+
+  document.getElementById('add-type').value = type;
+  document.getElementById('add-title').value = raw.split('\n')[0].slice(0,120);
+  if(priceMatch) document.getElementById('add-price').value = priceMatch[0];
+  if(locationMatch) document.getElementById('add-location').value = locationMatch[0];
+  document.getElementById('add-notes').value = raw.length > 120 ? raw.slice(120) : '';
+}
+
+function submitAddItem(){
+  const type     = document.getElementById('add-type').value;
+  const source   = document.getElementById('add-source').value;
+  const title    = document.getElementById('add-title').value.trim();
+  const price    = document.getElementById('add-price').value.trim();
+  const location = document.getElementById('add-location').value.trim();
+  const url      = document.getElementById('add-url').value.trim();
+  const category = document.getElementById('add-category').value.trim();
+  const notes    = document.getElementById('add-notes').value.trim();
+
+  if(!title){ showFeedback('⚠ Title is required', 'var(--red)'); return; }
+
+  const item = {
+    id: 'manual_'+Date.now(), type, source, title, price, location, url, category, notes,
+    added_at: new Date().toISOString().slice(0,10), is_manual: true
+  };
+
+  manualItems.push(item);
+  sessionAdded.push(item);
+  try{ localStorage.setItem('gg_manual_items', JSON.stringify(manualItems)); } catch(e){}
+
+  showFeedback('✓ Added: '+title, 'var(--green)');
+  renderRecentlyAdded();
+  clearAddForm();
+  if(D) render();
+}
+
+function showFeedback(msg, color){
+  const el = document.getElementById('add-feedback');
+  el.style.color = color;
+  el.textContent = msg;
+  setTimeout(()=>el.textContent='', 3000);
+}
+
+function clearAddForm(){
+  ['add-title','add-price','add-location','add-url','add-category','add-notes','paste-input'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+}
+
+function renderRecentlyAdded(){
+  document.getElementById('recently-added-list').innerHTML = sessionAdded.length
+    ? [...sessionAdded].reverse().map(m=>
+        '<div class="card" style="margin-bottom:6px">'+
+          '<div class="card-top"><div class="card-title">'+esc(m.title)+'</div>'+
+          '<span class="tag tag-blue" style="font-size:9px;flex-shrink:0">'+esc(m.type.toUpperCase())+'</span></div>'+
+          '<div class="card-meta">'+
+            '<span class="tag">'+esc(m.source)+'</span>'+
+            (m.location?'<span class="tag">'+esc(m.location)+'</span>':'')+
+            (m.price?'<span class="tag tag-amber">'+esc(m.price)+'</span>':'')+
+          '</div>'+
+          (m.notes?'<div style="font-size:11px;color:var(--muted)">'+esc(m.notes)+'</div>':'')+
+        '</div>'
+      ).join('')
+    : '<div class="empty" style="padding:20px"><strong>Nothing added yet</strong></div>';
+}
+
+// ─────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────
+function renderConfig(){
+  document.getElementById('cfg-zip').value    = CFG.zip||'';
+  document.getElementById('cfg-radius').value = CFG.radius||75;
+  document.getElementById('cfg-market').value = CFG.market||'';
+  document.getElementById('cfg-max-buy').value= CFG.maxBuy||5000;
+  document.getElementById('cfg-include').value= CFG.include||'';
+  document.getElementById('cfg-exclude').value= CFG.exclude||'';
+
+  document.getElementById('sources-list').innerHTML = DEFAULT_SOURCES.map(s=>{
+    const enabled = CFG.sources[s.id] !== false;
+    const typeColors = {supply:'amber',demand:'teal',operator:'blue',business_sale:'purple','supply/demand':'green',all:'muted'};
+    const tc = typeColors[s.type]||'muted';
+    return '<div class="source-row">'+
+      '<label class="toggle"><input type="checkbox" '+(enabled?'checked':'')+' onchange="toggleSource(\''+s.id+'\',this.checked)"><span class="toggle-slider"></span></label>'+
+      '<span class="source-name">'+esc(s.name)+'</span>'+
+      '<span class="source-type-tag tag tag-'+tc+'" style="font-size:9px">'+esc(s.type)+'</span>'+
+      (s.scraperReady?'<span style="font-size:9px;color:var(--green);font-family:var(--font-mono);margin-left:auto">scraper ready</span>':'<span style="font-size:9px;color:var(--muted);font-family:var(--font-mono);margin-left:auto">manual import</span>')+
+    '</div>';
   }).join('');
 }
 
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-  });
-});
-document.querySelectorAll('[data-sf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-sf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');supplyFilter=btn.dataset.sf;renderSupply();});});
-document.querySelectorAll('[data-bf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-bf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buyerFilter=btn.dataset.bf;renderBuyers();});});
-document.querySelectorAll('[data-mf]').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('[data-mf]').forEach(b=>b.classList.remove('active'));btn.classList.add('active');matchFilter=btn.dataset.mf;renderMatched();});});
+function toggleSource(id, enabled){
+  CFG.sources[id] = enabled;
+  try{ localStorage.setItem('gg_config', JSON.stringify(CFG)); } catch(e){}
+}
+
+function saveConfig(){
+  CFG.zip    = document.getElementById('cfg-zip').value.trim();
+  CFG.radius = parseInt(document.getElementById('cfg-radius').value)||75;
+  CFG.market = document.getElementById('cfg-market').value.trim();
+  CFG.maxBuy = parseInt(document.getElementById('cfg-max-buy').value)||5000;
+  try{ localStorage.setItem('gg_config', JSON.stringify(CFG)); } catch(e){}
+  document.getElementById('cfg-feedback').textContent = '✓ Saved';
+  setTimeout(()=>document.getElementById('cfg-feedback').textContent='',2000);
+}
+
+function saveKeywords(){
+  CFG.include = document.getElementById('cfg-include').value.trim();
+  CFG.exclude = document.getElementById('cfg-exclude').value.trim();
+  try{ localStorage.setItem('gg_config', JSON.stringify(CFG)); } catch(e){}
+}
+
+function copySheetId(){
+  navigator.clipboard.writeText('173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w')
+    .then(()=>alert('Sheet ID copied to clipboard'));
+}
+
+// ─────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────
 loadData();
+renderRecentlyAdded();
 </script>
 </body>
 </html>
