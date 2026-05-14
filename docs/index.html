@@ -2,1056 +2,1251 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Green Gregory Opportunity OS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Green Gregory OS</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
-
-:root{
-  --bg:#090c10;--bg2:#0f1318;--bg3:#161b23;--bg4:#1c2330;
-  --border:#1e2736;--border2:#28334a;
-  --text:#d6dce8;--muted:#5a6680;
-  --green:#00e87a;--green-d:#003d20;--green-bg:#001a0e;--green-dim:#00b85f;
-  --amber:#f0a500;--amber-bg:#1a0f00;
-  --red:#ff4060;--red-bg:#1a0008;
-  --blue:#4da6ff;--blue-bg:#00122a;
-  --teal:#00d4c8;--teal-bg:#001a19;
-  --purple:#b87fff;--purple-bg:#0e0020;
-  --sidebar-w:214px;--header-h:48px;
-  --font-ui:'Syne',sans-serif;--font-mono:'IBM Plex Mono',monospace;
+:root {
+  --bg:      #0f1117;
+  --bg2:     #1a1d27;
+  --bg3:     #22263a;
+  --border:  #2e3248;
+  --text:    #e4e6f0;
+  --muted:   #8b90a8;
+  --green:   #22c55e;
+  --green-d: #166534;
+  --amber:   #f59e0b;
+  --red:     #ef4444;
+  --blue:    #3b82f6;
+  --teal:    #14b8a6;
+  --purple:  #a78bfa;
+  --sidebar: 210px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:13px;line-height:1.5;display:flex;flex-direction:column}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
 
-/* HEADER */
-#hdr{height:var(--header-h);background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;z-index:20}
-#hdr-logo{font-size:14px;font-weight:800;color:var(--green);letter-spacing:-.02em;white-space:nowrap}
-#hdr-logo span{color:var(--muted);font-weight:400}
-#mode-badge{font-family:var(--font-mono);font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:.08em;flex-shrink:0}
-.mode-DEMO{background:var(--red-bg);color:var(--red);border:1px solid #400010}
-.mode-LIVE{background:var(--green-bg);color:var(--green);border:1px solid var(--green-d)}
-.mode-MIXED{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2800}
-.mode-MANUAL{background:var(--blue-bg);color:var(--blue);border:1px solid #002040}
-.mode-EMPTY{background:#111;color:var(--muted);border:1px solid var(--border2)}
-#hdr-spacer{flex:1}
-#last-updated{font-family:var(--font-mono);font-size:10px;color:var(--muted);white-space:nowrap}
-#refresh-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:5px;padding:4px 9px;font-size:11px;cursor:pointer;font-family:var(--font-mono)}
-#refresh-btn:hover{border-color:var(--green);color:var(--green)}
-#sidebar-toggle{display:none;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px}
+/* ── Header ── */
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0}
+header h1{font-size:15px;font-weight:600;color:var(--green)}
+#last-updated{font-size:11px;color:var(--muted)}
+#refresh-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer}
 
-/* MODE BANNER */
-#mode-banner{display:none;padding:7px 16px;font-size:11px;font-family:var(--font-mono);border-bottom:1px solid var(--border);flex-shrink:0;align-items:center;gap:10px}
-#mode-banner.show{display:flex}
-.banner-DEMO{background:var(--red-bg);color:var(--red)}
-.banner-LIVE{background:var(--green-bg);color:var(--green)}
-.banner-MIXED{background:var(--amber-bg);color:var(--amber)}
-.banner-MANUAL{background:var(--blue-bg);color:var(--blue)}
-.banner-EMPTY{background:#111;color:var(--muted)}
-#mode-banner-close{margin-left:auto;cursor:pointer;opacity:.6;font-size:14px}
-#mode-banner-close:hover{opacity:1}
+/* ── Mode banner ── */
+#mode-banner{display:none;padding:8px 16px;font-size:12px;font-weight:500;position:relative}
+#mode-banner.EMPTY{background:#1e1b4b;color:#a5b4fc;border-bottom:1px solid #3730a3}
+#mode-banner.SIGNALS_ONLY{background:#1c2b1a;color:#86efac;border-bottom:1px solid #166534}
+#mode-banner.DEMO{background:#292524;color:#fcd34d;border-bottom:1px solid #78350f}
+#mode-banner.STALE{background:#2d1212;color:#fca5a5;border-bottom:1px solid #991b1b}
+#mode-banner.MATCHED{background:#0f2027;color:#5eead4;border-bottom:1px solid #0d9488}
+#mode-banner.MANUAL{background:#1a1f2e;color:#93c5fd;border-bottom:1px solid #1d4ed8}
+#mode-banner.MIXED{background:#1f1a2e;color:#c4b5fd;border-bottom:1px solid #7c3aed}
+.banner-close{position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;color:inherit;opacity:.6;font-size:14px}
 
-/* LAYOUT */
-#layout{display:flex;flex:1;overflow:hidden}
+/* ── Layout ── */
+.app-body{display:flex;flex:1;overflow:hidden}
 
-/* SIDEBAR */
-#sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;overflow-x:hidden}
-#sidebar::-webkit-scrollbar{width:3px}#sidebar::-webkit-scrollbar-thumb{background:var(--border2)}
-.sb-section{padding:14px 0 6px}
-.sb-label{font-family:var(--font-mono);font-size:9px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:0 14px 6px}
-.sb-item{display:flex;align-items:center;gap:9px;padding:7px 14px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;color:var(--muted);font-size:12px;font-weight:600;white-space:nowrap;user-select:none}
-.sb-item:hover{color:var(--text);background:var(--bg3)}
-.sb-item.active{color:var(--green);border-left-color:var(--green);background:var(--green-bg)}
-.sb-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
-.sb-badge{margin-left:auto;font-family:var(--font-mono);font-size:9px;background:var(--bg4);border-radius:9px;padding:1px 6px;color:var(--muted)}
-.sb-item.active .sb-badge{background:var(--green-d);color:var(--green)}
-.sb-divider{height:1px;background:var(--border);margin:6px 14px}
-#sb-kpi{padding:12px 14px;border-top:1px solid var(--border);margin-top:auto}
-.sb-kpi-row{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:10px;margin-bottom:4px}
-.sb-kpi-label{color:var(--muted)}.sb-kpi-val{font-weight:600;color:var(--green)}
+/* ── Sidebar ── */
+aside{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;position:sticky;top:41px;height:calc(100vh - 41px)}
+.sidebar-section{padding:8px 0}
+.sidebar-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:6px 14px 4px}
+.nav-btn{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:none;color:var(--muted);font-size:13px;padding:7px 14px;cursor:pointer;text-align:left;border-radius:0;transition:background .1s}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--bg3);color:var(--green);font-weight:500}
+.nav-count{font-size:11px;background:var(--bg3);border-radius:10px;padding:1px 7px;color:var(--muted);min-width:22px;text-align:center}
+.nav-btn.active .nav-count{background:var(--green-d);color:var(--green)}
+.sidebar-sep{height:1px;background:var(--border);margin:4px 0}
 
-/* CONTENT */
-#content{flex:1;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
-#content::-webkit-scrollbar{width:4px}#content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-.panel{display:none;flex:1;flex-direction:column}
-.panel.active{display:flex}
-.panel-inner{padding:16px;max-width:1100px;width:100%}
+/* ── Main content ── */
+.main-content{flex:1;overflow-y:auto;padding:16px;max-width:900px}
 
-/* PANEL HEADER */
-.ph{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.ph-title{font-size:18px;font-weight:800;letter-spacing:-.02em}
-.ph-sub{font-size:11px;color:var(--muted);font-family:var(--font-mono)}
-.ph-actions{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+/* ── Panels ── */
+.panel{display:none}
+.panel.active{display:block}
 
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:var(--font-ui);transition:all .15s;white-space:nowrap}
-.btn-primary{background:var(--green);color:#000}.btn-primary:hover{background:var(--green-dim)}
-.btn-ghost{background:none;border:1px solid var(--border2);color:var(--muted)}.btn-ghost:hover{border-color:var(--green);color:var(--green)}
-.btn-sm{padding:4px 9px;font-size:11px}
+/* ── KPI grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:600px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
+.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 10px;text-align:center}
+.kpi-value{font-size:22px;font-weight:700;color:var(--green);line-height:1.2}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:2px}
+.kpi-value.amber{color:var(--amber)}
+.kpi-value.blue{color:var(--blue)}
+.kpi-value.teal{color:var(--teal)}
+.kpi-value.purple{color:var(--purple)}
+.kpi-value.red{color:var(--red)}
 
-/* FILTER BAR */
+/* ── Section header ── */
+.section-hd{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;margin-top:4px}
+
+/* ── Filter bar ── */
 .filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.fbtn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:5px 11px;font-size:11px;cursor:pointer;font-family:var(--font-ui);font-weight:600;transition:all .12s}
-.fbtn:hover{border-color:var(--border2);color:var(--text)}.fbtn.active{background:var(--green-d);border-color:var(--green);color:var(--green)}
-.fsearch{flex:1;min-width:160px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono)}
-.fsearch::placeholder{color:var(--muted)}.fsearch:focus{outline:none;border-color:var(--green)}
+.filter-btn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;white-space:nowrap}
+.filter-btn.active{background:var(--green-d);border-color:var(--green);color:var(--green)}
+.search-box{flex:1;min-width:160px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--text);font-size:13px}
+.search-box:focus{outline:none;border-color:var(--green)}
+.search-box::placeholder{color:var(--muted)}
+select.filter-sel{background:var(--bg2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
+select.filter-sel:focus{outline:none;border-color:var(--green);color:var(--text)}
 
-/* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
-@media(max-width:600px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
-.kpi-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 10px;text-align:center}
-.kpi-val{font-size:22px;font-weight:800;line-height:1.1;font-family:var(--font-mono)}
-.kpi-lbl{font-size:9px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.08em}
-.cv-green{color:var(--green)}.cv-teal{color:var(--teal)}.cv-amber{color:var(--amber)}.cv-blue{color:var(--blue)}.cv-purple{color:var(--purple)}.cv-red{color:var(--red)}.cv-muted{color:var(--muted)}
-
-/* CARDS */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;transition:border-color .15s}
-.card:hover{border-color:var(--border2)}
+/* ── Signal / deal cards ── */
+.sig-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+.sig-card:hover{border-color:var(--green)}
+.sig-card.selected{border-color:var(--amber);background:var(--bg3)}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px}
-.card-title{font-size:13px;font-weight:700;flex:1;line-height:1.4}
-.card-meta{display:flex;flex-wrap:wrap;gap:4px;font-size:10px;color:var(--muted);margin-bottom:6px;font-family:var(--font-mono)}
-.tag{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 6px}
-.tag-green{background:var(--green-bg);border-color:var(--green-d);color:var(--green)}
-.tag-amber{background:var(--amber-bg);border-color:#3a2800;color:var(--amber)}
-.tag-blue{background:var(--blue-bg);border-color:#002040;color:var(--blue)}
-.tag-purple{background:var(--purple-bg);border-color:#2a0050;color:var(--purple)}
-.tag-red{background:var(--red-bg);border-color:#400010;color:var(--red)}
-.tag-teal{background:var(--teal-bg);border-color:#003030;color:var(--teal)}
-.card-nums{display:flex;gap:14px;font-size:12px;flex-wrap:wrap;font-family:var(--font-mono)}
-.n-buy{color:var(--muted)}.n-sell{color:var(--teal);font-weight:600}.n-profit{color:var(--green);font-weight:600}
-.score-badge{flex-shrink:0;font-family:var(--font-mono);font-size:11px;font-weight:700;border-radius:4px;padding:2px 7px}
-.sh{background:#003d20;color:#00e87a}.sm{background:#3a2800;color:#f0a500}.sl{background:#0e0020;color:#b87fff}
-.demo-tag{background:var(--red-bg);color:var(--red);font-size:9px;border-radius:3px;padding:1px 5px;font-family:var(--font-mono);border:1px solid #400010}
-.manual-tag{background:var(--blue-bg);color:var(--blue);font-size:9px;border-radius:3px;padding:1px 5px;font-family:var(--font-mono);border:1px solid #002040}
+.card-title{font-size:13px;font-weight:500;color:var(--text);flex:1;line-height:1.4}
+.score-badge{flex:none;font-size:12px;font-weight:700;border-radius:5px;padding:2px 7px;line-height:1.6}
+.score-hi{background:#14532d;color:#4ade80}
+.score-mid{background:#78350f;color:#fcd34d}
+.score-low{background:#1e1b4b;color:#a5b4fc}
+.card-meta{display:flex;flex-wrap:wrap;gap:5px;font-size:11px;color:var(--muted);margin-bottom:5px}
+.tag{background:var(--bg3);border-radius:4px;padding:1px 6px}
+.tag.supply{background:#0c2016;color:#4ade80}
+.tag.demand{background:#0c1a2e;color:#93c5fd}
+.tag.operator{background:#1a1030;color:#c4b5fd}
+.tag.infrastructure{background:#1a1a10;color:#fcd34d}
+.tag.business_for_sale{background:#1a1010;color:#fca5a5}
+.tag.event{background:#101a1a;color:#5eead4}
+.tag.lead{background:#101020;color:#a78bfa}
+.tag.live{background:#0c2016;color:#4ade80}
+.tag.manual{background:#1a1030;color:#a78bfa}
+.tag.seed{background:#292524;color:#d97706}
+.tag.matched{background:#0c2016;color:#4ade80}
+.tag.unmatched{background:#1a1a1a;color:#6b7280}
+.card-numbers{display:flex;gap:12px;font-size:12px}
+.num-buy{color:var(--muted)}
+.num-profit{color:var(--green);font-weight:600}
+.num-spread{color:var(--teal)}
+.card-link{display:inline-block;margin-top:6px;font-size:11px;color:var(--blue);text-decoration:none}
+.no-url{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
 
-/* DEAL CARD */
-.deal-sides{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;font-size:11px}
-@media(max-width:500px){.deal-sides{grid-template-columns:1fr}}
-.side-box{background:var(--bg3);border-radius:6px;padding:8px 10px;border:1px solid var(--border)}
-.side-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;font-family:var(--font-mono)}
-.side-supply .side-label{color:var(--amber)}.side-buyer .side-label{color:var(--teal)}
-.reason-box{background:var(--bg3);border-radius:5px;padding:7px 9px;font-size:11px;color:var(--muted);margin:5px 0;border-left:2px solid var(--border2)}
-.action-box{background:var(--green-bg);border:1px solid var(--green-d);border-radius:6px;padding:7px 10px;font-size:11px;color:var(--green);margin-top:5px}
-.action-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;color:var(--green-dim);font-family:var(--font-mono)}
+/* ── Empty state ── */
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.empty strong{display:block;font-size:15px;margin-bottom:6px;color:var(--text)}
 
-/* ASSEMBLY */
-.asm-card{background:var(--bg2);border:1px solid #2a0050;border-radius:8px;padding:12px 14px;margin-bottom:8px}
-.asm-conf{font-size:10px;color:var(--purple);font-family:var(--font-mono)}
-.asm-desc{font-size:11px;color:var(--muted);margin:5px 0;line-height:1.6}
-.asm-items{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
-.asm-item{background:var(--bg3);border-radius:3px;padding:1px 7px;font-size:10px;color:var(--muted);font-family:var(--font-mono)}
-.asm-action{background:var(--purple-bg);border:1px solid #2a0050;border-radius:5px;padding:6px 9px;font-size:11px;color:var(--purple);margin-top:5px}
-
-/* LANE CARDS */
-.demand-card{background:var(--bg2);border:1px solid #003030;border-radius:8px;padding:12px 14px;margin-bottom:8px}
-.operator-card{background:var(--bg2);border:1px solid #001a40;border-radius:8px;padding:12px 14px;margin-bottom:8px}
-.infra-card{background:var(--bg2);border:1px solid #1a1a00;border-radius:8px;padding:12px 14px;margin-bottom:8px}
-
-/* TABLES */
-.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th,td{padding:8px 10px;font-size:11px;border-bottom:1px solid var(--border);white-space:nowrap}
-th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:9px;letter-spacing:.07em;background:var(--bg3);font-family:var(--font-mono)}
-tr:last-child td{border-bottom:none}td.r,th.r{text-align:right}
-.tg{color:var(--green)}.ta{color:var(--amber)}.tt{color:var(--teal)}.tm{color:var(--muted)}.tp{color:var(--purple)}
-
-/* FEED DOT */
-.fdot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.fdot-ok{background:var(--green)}.fdot-warn{background:var(--amber)}.fdot-err{background:var(--red)}.fdot-off{background:var(--muted)}
-
-/* EMPTY */
-.empty{text-align:center;padding:36px 20px;color:var(--muted);font-size:12px}
-.empty strong{display:block;font-size:14px;margin-bottom:6px;color:var(--text)}
-.empty code{font-family:var(--font-mono);font-size:11px;color:var(--green)}
-
-/* TOTALS */
-.totals-row{display:flex;gap:14px;font-size:11px;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;font-family:var(--font-mono)}
-.tv{font-weight:700;color:var(--text)}.tg2{font-weight:700;color:var(--green)}
-
-/* LOADING */
-#loading{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--muted);font-family:var(--font-mono);font-size:12px;gap:12px}
-.spinner{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+/* ── Loading ── */
+#loading{text-align:center;padding:60px 20px;color:var(--muted)}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* MATCH WORKBENCH */
-#workbench-wrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:calc(100vh - var(--header-h) - 110px);overflow:hidden}
-@media(max-width:700px){#workbench-wrap{grid-template-columns:1fr;height:auto;overflow:visible}}
-.wb-pane{background:var(--bg2);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;overflow:hidden}
-.wb-pane-hd{padding:10px 12px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px;font-family:var(--font-mono);flex-shrink:0;flex-wrap:wrap}
-.wb-pane-body{overflow-y:auto;flex:1;padding:10px}
-.wb-pane-body::-webkit-scrollbar{width:3px}
-.wb-item{padding:8px 10px;border-radius:5px;border:1px solid var(--border);margin-bottom:6px;cursor:pointer;transition:all .12s;font-size:12px;background:var(--bg3)}
-.wb-item:hover{border-color:var(--border2)}.wb-item.selected{border-color:var(--green);background:var(--green-bg)}
-.wb-item-title{font-weight:600;margin-bottom:2px}.wb-item-meta{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
-.wb-match{padding:8px 10px;border-radius:5px;border:1px solid var(--border);margin-bottom:6px;font-size:11px;background:var(--bg3)}
-.wb-match-header{display:flex;justify-content:space-between;margin-bottom:3px;align-items:center}
-.wb-match-type{font-size:9px;font-family:var(--font-mono);padding:1px 5px;border-radius:3px;font-weight:600}
-.wmt-buyer{background:var(--teal-bg);color:var(--teal);border:1px solid #003030}
-.wmt-seller{background:var(--amber-bg);color:var(--amber);border:1px solid #3a2800}
-.wmt-operator{background:var(--blue-bg);color:var(--blue);border:1px solid #002040}
-.wmt-assembly{background:var(--purple-bg);color:var(--purple);border:1px solid #2a0050}
-.wb-approve-btn{font-size:9px;background:var(--green-bg);color:var(--green);border:1px solid var(--green-d);border-radius:3px;padding:2px 7px;cursor:pointer;font-family:var(--font-mono)}
-.wb-approve-btn:hover{background:var(--green-d)}
-.wb-placeholder{text-align:center;padding:28px 16px;color:var(--muted);font-size:11px;font-family:var(--font-mono)}
+/* ── Drawer ── */
+#drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100}
+#drawer{position:fixed;right:0;top:0;bottom:0;width:min(480px,100vw);background:var(--bg2);border-left:1px solid var(--border);z-index:101;overflow-y:auto;transform:translateX(100%);transition:transform .25s ease;display:flex;flex-direction:column}
+#drawer.open{transform:translateX(0)}
+#drawer-overlay.open{display:block}
+.drawer-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;background:var(--bg2);z-index:1}
+.drawer-title{font-size:14px;font-weight:600;color:var(--text)}
+.drawer-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
+.drawer-body{padding:16px;flex:1}
+.drawer-section{margin-bottom:18px}
+.drawer-section-hd{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.drawer-field{margin-bottom:8px}
+.drawer-field-label{font-size:11px;color:var(--muted);margin-bottom:2px}
+.drawer-field-value{font-size:13px;color:var(--text);word-break:break-word}
+.drawer-field-value.description{font-size:12px;color:var(--muted);line-height:1.6;max-height:120px;overflow-y:auto;background:var(--bg3);padding:8px;border-radius:6px}
+.drawer-action-btn{display:inline-block;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid;margin-right:6px;margin-bottom:6px}
+.btn-open{background:#0c2016;border-color:var(--green);color:var(--green);text-decoration:none}
+.btn-match{background:#1a1030;border-color:var(--purple);color:var(--purple)}
+.btn-create{background:var(--green-d);border-color:var(--green);color:var(--green)}
+.candidate-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:7px;cursor:pointer}
+.candidate-item:hover{border-color:var(--amber)}
+.candidate-title{font-size:12px;font-weight:500;color:var(--text)}
+.candidate-meta{font-size:11px;color:var(--muted);margin-top:3px}
 
-/* VISUAL FLOW */
-#flow-canvas{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:auto;min-height:400px;height:calc(100vh - var(--header-h) - 160px)}
-.flow-stage{position:relative;min-width:900px;padding:30px}
-.flow-row{display:flex;gap:0;align-items:center;margin-bottom:22px}
-.flow-node{background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:10px 14px;min-width:150px;max-width:190px;flex-shrink:0}
-.flow-node-type{font-size:8px;font-family:var(--font-mono);font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.flow-node-title{font-size:11px;font-weight:700;line-height:1.4}
-.flow-node-meta{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--font-mono)}
-.fn-supply{border-color:#3a2800}.fn-supply .flow-node-type{color:var(--amber)}
-.fn-demand{border-color:#003030}.fn-demand .flow-node-type{color:var(--teal)}
-.fn-operator{border-color:#002040}.fn-operator .flow-node-type{color:var(--blue)}
-.fn-assembly{border-color:#2a0050}.fn-assembly .flow-node-type{color:var(--purple)}
-.fn-deal{border-color:var(--green-d);background:var(--green-bg)}.fn-deal .flow-node-type{color:var(--green)}
-.flow-arrow{flex:1;display:flex;align-items:center;padding:0 4px;min-width:24px}
-.flow-arrow svg{width:100%;height:14px}
-.flow-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10px;font-family:var(--font-mono);margin-bottom:10px}
-.fl-item{display:flex;align-items:center;gap:5px}
-.fl-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+/* ── P&L table ── */
+.pl-table{width:100%;border-collapse:collapse}
+.pl-table th,.pl-table td{text-align:left;padding:8px 10px;font-size:12px;border-bottom:1px solid var(--border)}
+.pl-table th{color:var(--muted);font-weight:500;text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+.pl-table tr:last-child td{border-bottom:none}
+.pl-table td:nth-child(n+3){text-align:right}
+.pl-table th:nth-child(n+3){text-align:right}
+.tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;overflow-x:auto}
 
-/* FORMS */
-.add-form{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
-.form-group{display:flex;flex-direction:column;gap:4px}
-.form-group label{font-size:10px;font-family:var(--font-mono);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
-.form-group input,.form-group select,.form-group textarea{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:12px;font-family:var(--font-mono)}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--green)}
-.form-group textarea{resize:vertical;min-height:70px;line-height:1.5}
-.form-group select option{background:var(--bg3)}
-.form-full{grid-column:1/-1}
-.form-actions{display:flex;gap:8px;margin-top:12px}
-.paste-area{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px;font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-bottom:10px;min-height:80px;resize:vertical;width:100%;line-height:1.5}
-.paste-area:focus{outline:none;border-color:var(--green)}
+/* ── Feed status ── */
+.feed-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.feed-dot.ok{background:var(--green)}
+.feed-dot.warn{background:var(--amber)}
 
-/* CONFIG */
-.config-section{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:12px}
-.config-section h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;color:var(--text);font-family:var(--font-mono)}
-.config-note{font-size:11px;color:var(--muted);font-family:var(--font-mono);margin-top:8px;padding:8px;background:var(--bg3);border-radius:5px;border-left:2px solid var(--border2);line-height:1.7}
-.source-tbl{width:100%;border-collapse:collapse;font-size:11px}
-.source-tbl th{font-family:var(--font-mono);font-size:9px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:6px 8px;border-bottom:1px solid var(--border);text-align:left;background:var(--bg3)}
-.source-tbl td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
-.source-tbl tr:last-child td{border-bottom:none}.source-tbl tr:hover td{background:var(--bg3)}
-.scraper-live{color:var(--green);font-family:var(--font-mono);font-size:9px;font-weight:600}
-.scraper-manual{color:var(--blue);font-family:var(--font-mono);font-size:9px;font-weight:600}
-.scraper-none{color:var(--muted);font-family:var(--font-mono);font-size:9px}
-.enabled-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
-.enabled-on{background:var(--green)}.enabled-off{background:var(--muted)}
+/* ── Sources config table ── */
+.config-table{width:100%;border-collapse:collapse;font-size:12px}
+.config-table th,.config-table td{padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.config-table th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase}
+.config-table tr:last-child td{border-bottom:none}
+.enabled-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.enabled-dot.on{background:var(--green)}
+.enabled-dot.off{background:var(--muted)}
 
-/* SECTION HEADER */
-.sec-hd{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;font-family:var(--font-mono)}
+/* ── Manual match panel ── */
+#match-pending{display:none;background:var(--bg3);border:1px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.match-pending-title{font-size:12px;font-weight:600;color:var(--amber);margin-bottom:6px}
+.match-pending-item{font-size:12px;color:var(--text);margin-bottom:3px}
+.match-pending-actions{margin-top:10px;display:flex;gap:8px}
 
-/* RESPONSIVE SIDEBAR */
-@media(max-width:768px){
-  #sidebar{position:fixed;left:0;top:var(--header-h);bottom:0;z-index:100;transform:translateX(-100%);transition:transform .2s}
-  #sidebar.open{transform:translateX(0)}
-  #sidebar-toggle{display:block}
-  .layout-overlay{display:none;position:fixed;inset:0;top:var(--header-h);background:rgba(0,0,0,.5);z-index:99}
-  .layout-overlay.active{display:block}
-}
+/* ── Lane summary cards ── */
+.lane-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:600px){.lane-grid{grid-template-columns:repeat(3,1fr)}}
+.lane-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+.lane-card:hover{border-color:var(--green)}
+.lane-card-count{font-size:24px;font-weight:700;color:var(--green)}
+.lane-card-label{font-size:12px;color:var(--muted);margin-top:2px}
+.lane-card-sub{font-size:11px;color:var(--muted);margin-top:4px}
 </style>
 </head>
 <body>
 
-<div id="hdr">
-  <button id="sidebar-toggle" onclick="toggleSidebar()">☰</button>
-  <div id="hdr-logo">🟢 Green Gregory <span>Opportunity OS</span></div>
-  <span id="mode-badge" class="mode-DEMO">DEMO</span>
-  <div id="hdr-spacer"></div>
-  <span id="last-updated">—</span>
-  <button id="refresh-btn" onclick="loadData()">↻ refresh</button>
-</div>
+<header>
+  <h1>🟢 Green Gregory OS</h1>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="last-updated">loading…</span>
+    <button id="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  </div>
+</header>
 
-<div id="mode-banner" class="banner-DEMO">
+<div id="mode-banner">
   <span id="mode-banner-text"></span>
-  <span id="mode-banner-close" onclick="document.getElementById('mode-banner').classList.remove('show')">✕</span>
+  <span class="banner-close" onclick="this.parentElement.style.display='none'">✕</span>
 </div>
 
-<div class="layout-overlay" id="overlay" onclick="closeSidebar()"></div>
+<div class="app-body">
 
-<div id="layout">
+<!-- ── Sidebar ── -->
+<aside id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Overview</div>
+    <button class="nav-btn active" data-panel="dashboard" onclick="showPanel('dashboard',this)">
+      📊 Dashboard <span class="nav-count" id="cnt-dashboard">—</span>
+    </button>
+    <button class="nav-btn" data-panel="signals" onclick="showPanel('signals',this)">
+      📡 All Signals <span class="nav-count" id="cnt-signals">0</span>
+    </button>
+  </div>
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Signal Lanes</div>
+    <button class="nav-btn" data-panel="supply" onclick="showPanel('supply',this)">
+      📦 Supply <span class="nav-count" id="cnt-supply">0</span>
+    </button>
+    <button class="nav-btn" data-panel="demand" onclick="showPanel('demand',this)">
+      📣 Demand / ISO <span class="nav-count" id="cnt-demand">0</span>
+    </button>
+    <button class="nav-btn" data-panel="operators" onclick="showPanel('operators',this)">
+      🔧 Operators <span class="nav-count" id="cnt-operators">0</span>
+    </button>
+    <button class="nav-btn" data-panel="infra" onclick="showPanel('infra',this)">
+      🏗 Infrastructure <span class="nav-count" id="cnt-infra">0</span>
+    </button>
+    <button class="nav-btn" data-panel="biz" onclick="showPanel('biz',this)">
+      🏢 Business For Sale <span class="nav-count" id="cnt-biz">0</span>
+    </button>
+    <button class="nav-btn" data-panel="events" onclick="showPanel('events',this)">
+      🏠 Events / Sales <span class="nav-count" id="cnt-events">0</span>
+    </button>
+    <button class="nav-btn" data-panel="leads" onclick="showPanel('leads',this)">
+      👤 Leads <span class="nav-count" id="cnt-leads">0</span>
+    </button>
+  </div>
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Opportunities</div>
+    <button class="nav-btn" data-panel="matches" onclick="showPanel('matches',this)">
+      🔥 Matched Deals <span class="nav-count" id="cnt-matches">0</span>
+    </button>
+    <button class="nav-btn" data-panel="assembly" onclick="showPanel('assembly',this)">
+      🧩 Assembly Opps <span class="nav-count" id="cnt-assembly">0</span>
+    </button>
+    <button class="nav-btn" data-panel="workbench" onclick="showPanel('workbench',this)">
+      ⚙ Workbench <span class="nav-count" id="cnt-workbench">0</span>
+    </button>
+  </div>
+  <div class="sidebar-sep"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">System</div>
+    <button class="nav-btn" data-panel="config" onclick="showPanel('config',this)">
+      ⚙ Config / Sources
+    </button>
+    <button class="nav-btn" data-panel="feeds" onclick="showPanel('feeds',this)">
+      📡 Feed Health
+    </button>
+    <button class="nav-btn" data-panel="pl" onclick="showPanel('pl',this)">
+      💰 P&amp;L
+    </button>
+  </div>
+</aside>
 
-<nav id="sidebar">
-  <div class="sb-section">
-    <div class="sb-label">Overview</div>
-    <div class="sb-item active" data-panel="dashboard" onclick="nav(this)"><span class="sb-icon">⬛</span>Dashboard</div>
-  </div>
-  <div class="sb-divider"></div>
-  <div class="sb-section">
-    <div class="sb-label">Signal Lanes</div>
-    <div class="sb-item" data-panel="supply" onclick="nav(this)"><span class="sb-icon">📦</span>Supply<span class="sb-badge" id="sb-supply">0</span></div>
-    <div class="sb-item" data-panel="demand" onclick="nav(this)"><span class="sb-icon">🎯</span>Demand / ISO / WTB<span class="sb-badge" id="sb-demand">0</span></div>
-    <div class="sb-item" data-panel="operators" onclick="nav(this)"><span class="sb-icon">🔧</span>Operators<span class="sb-badge" id="sb-operators">0</span></div>
-    <div class="sb-item" data-panel="infra" onclick="nav(this)"><span class="sb-icon">🏗️</span>Infrastructure<span class="sb-badge" id="sb-infra">0</span></div>
-  </div>
-  <div class="sb-divider"></div>
-  <div class="sb-section">
-    <div class="sb-label">Workbench</div>
-    <div class="sb-item" data-panel="matches" onclick="nav(this)"><span class="sb-icon">⚡</span>Matched Deals<span class="sb-badge" id="sb-matches">0</span></div>
-    <div class="sb-item" data-panel="assembly" onclick="nav(this)"><span class="sb-icon">🏭</span>Assembly<span class="sb-badge" id="sb-assembly">0</span></div>
-    <div class="sb-item" data-panel="workbench" onclick="nav(this)"><span class="sb-icon">🔬</span>Match Workbench</div>
-    <div class="sb-item" data-panel="flow" onclick="nav(this)"><span class="sb-icon">🗺️</span>Visual Flow</div>
-  </div>
-  <div class="sb-divider"></div>
-  <div class="sb-section">
-    <div class="sb-label">System</div>
-    <div class="sb-item" data-panel="add" onclick="nav(this)"><span class="sb-icon">➕</span>Add Item</div>
-    <div class="sb-item" data-panel="config" onclick="nav(this)"><span class="sb-icon">⚙️</span>Config / Sources<span class="sb-badge" id="sb-sources">0</span></div>
-    <div class="sb-item" data-panel="feeds" onclick="nav(this)"><span class="sb-icon">📡</span>Feed Health<span class="sb-badge" id="sb-feeds">0</span></div>
-  </div>
-  <div id="sb-kpi">
-    <div class="sb-kpi-row"><span class="sb-kpi-label">Hot matches</span><span class="sb-kpi-val" id="sb-hot">—</span></div>
-    <div class="sb-kpi-row"><span class="sb-kpi-label">Est profit</span><span class="sb-kpi-val" id="sb-profit">—</span></div>
-    <div class="sb-kpi-row"><span class="sb-kpi-label">Assembly opps</span><span class="sb-kpi-val" id="sb-asm-count">—</span></div>
-  </div>
-</nav>
+<!-- ── Main content ── -->
+<div class="main-content">
 
-<div id="content">
-<div id="loading"><div class="spinner"></div>Loading Opportunity OS…</div>
+<div id="loading"><div class="spinner"></div>Loading dashboard…</div>
 
-<!-- DASHBOARD -->
-<div class="panel" id="panel-dashboard">
-  <div class="panel-inner">
-    <div class="ph"><div>
-      <div class="ph-title">Dashboard</div>
-      <div class="ph-sub" id="dash-sub">Opportunity OS</div>
-    </div></div>
-    <div class="kpi-grid" id="kpi-main"></div>
-    <div class="sec-hd">Top Matched Deals</div><div id="dash-matches"></div>
-    <div class="sec-hd" style="margin-top:14px">Assembly Opportunities</div><div id="dash-assembly"></div>
+<div id="app" style="display:none">
+
+  <!-- ── Dashboard ── -->
+  <div class="panel active" id="panel-dashboard">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div id="lane-summary-grid" class="lane-grid"></div>
+    <div class="section-hd">Top Matched Deals</div>
+    <div id="dash-matches"></div>
+    <div class="section-hd" style="margin-top:16px">Top Unmatched Signals</div>
+    <div id="dash-unmatched"></div>
   </div>
-</div>
 
-<!-- SUPPLY -->
-<div class="panel" id="panel-supply">
-  <div class="panel-inner">
-    <div class="ph">
-      <div><div class="ph-title">Supply</div><div class="ph-sub">Seller / auction / surplus listings</div></div>
-      <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="nav(document.querySelector('[data-panel=add]'))">+ Add manually</button></div>
+  <!-- ── All Signals ── -->
+  <div class="panel" id="panel-signals">
+    <div class="section-hd">All Signals</div>
+    <div id="signals-filters">
+      <div class="filter-bar">
+        <input class="search-box" id="sig-search" placeholder="Search title, description, keywords…" oninput="renderSignals()">
+      </div>
+      <div class="filter-bar">
+        <select class="filter-sel" id="sig-type" onchange="renderSignals()">
+          <option value="">All Types</option>
+          <option value="supply">Supply</option>
+          <option value="demand">Demand</option>
+          <option value="operator">Operator</option>
+          <option value="infrastructure">Infrastructure</option>
+          <option value="business_for_sale">Business For Sale</option>
+          <option value="event">Event / Sale</option>
+          <option value="lead">Lead</option>
+        </select>
+        <select class="filter-sel" id="sig-origin" onchange="renderSignals()">
+          <option value="">All Origins</option>
+          <option value="live">Live</option>
+          <option value="manual">Manual</option>
+          <option value="seed">Seed/Demo</option>
+        </select>
+        <select class="filter-sel" id="sig-match" onchange="renderSignals()">
+          <option value="">All Status</option>
+          <option value="unmatched">Unmatched Only</option>
+          <option value="matched">Matched Only</option>
+        </select>
+        <select class="filter-sel" id="sig-sort" onchange="renderSignals()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="price_low">Lowest Price</option>
+          <option value="price_high">Highest Price</option>
+        </select>
+        <button class="filter-btn" id="sig-has-url" onclick="toggleSigFilter('url',this)">Has URL</button>
+        <button class="filter-btn" id="sig-has-phone" onclick="toggleSigFilter('phone',this)">Has Phone</button>
+      </div>
     </div>
-    <div class="filter-bar" id="supply-filters">
-      <button class="fbtn active" data-sf="all" onclick="sf(this,'supply')">All</button>
-      <input class="fsearch" id="supply-search" placeholder="Search supply…" oninput="renderSupply()">
+    <div id="sig-count-bar" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+    <div id="signals-list"></div>
+  </div>
+
+  <!-- ── Supply lane ── -->
+  <div class="panel" id="panel-supply">
+    <div class="section-hd">Supply Items</div>
+    <div class="filter-bar">
+      <input class="search-box" id="supply-search" placeholder="Search supply…" oninput="renderLane('supply')">
+      <select class="filter-sel" id="supply-sort" onchange="renderLane('supply')">
+        <option value="newest">Newest</option>
+        <option value="price_low">Lowest Price</option>
+        <option value="price_high">Highest Price</option>
+      </select>
     </div>
-    <div class="totals-row" id="supply-totals"></div>
     <div id="supply-list"></div>
   </div>
-</div>
 
-<!-- DEMAND -->
-<div class="panel" id="panel-demand">
-  <div class="panel-inner">
-    <div class="ph">
-      <div><div class="ph-title">Demand / ISO / WTB</div><div class="ph-sub">Buy signals, ISO posts, service requests</div></div>
-      <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="navAdd('demand')">+ Add demand signal</button></div>
-    </div>
+  <!-- ── Demand lane ── -->
+  <div class="panel" id="panel-demand">
+    <div class="section-hd">Demand / ISO / WTB</div>
     <div class="filter-bar">
-      <button class="fbtn active" data-df="all" onclick="sf(this,'demand')">All</button>
-      <button class="fbtn" data-df="iso" onclick="sf(this,'demand')">ISO</button>
-      <button class="fbtn" data-df="wtb" onclick="sf(this,'demand')">WTB</button>
-      <button class="fbtn" data-df="service_request" onclick="sf(this,'demand')">Service Request</button>
-      <button class="fbtn" data-df="manual" onclick="sf(this,'demand')">Manual</button>
-      <input class="fsearch" id="demand-search" placeholder="Search demand…" oninput="renderDemand()">
+      <input class="search-box" id="demand-search" placeholder="Search demand…" oninput="renderLane('demand')">
     </div>
-    <div class="totals-row" id="demand-totals"></div>
     <div id="demand-list"></div>
   </div>
-</div>
 
-<!-- OPERATORS -->
-<div class="panel" id="panel-operators">
-  <div class="panel-inner">
-    <div class="ph">
-      <div><div class="ph-title">Operators</div><div class="ph-sub">Service providers, contractors, resellers</div></div>
-      <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="navAdd('operator')">+ Add operator</button></div>
-    </div>
+  <!-- ── Operators lane ── -->
+  <div class="panel" id="panel-operators">
+    <div class="section-hd">Operators</div>
     <div class="filter-bar">
-      <button class="fbtn active" data-opf="all" onclick="sf(this,'operators')">All</button>
-      <button class="fbtn" data-opf="contractor" onclick="sf(this,'operators')">Contractor</button>
-      <button class="fbtn" data-opf="reseller" onclick="sf(this,'operators')">Reseller</button>
-      <button class="fbtn" data-opf="service" onclick="sf(this,'operators')">Service</button>
-      <button class="fbtn" data-opf="manual" onclick="sf(this,'operators')">Manual</button>
-      <input class="fsearch" id="operators-search" placeholder="Search operators…" oninput="renderOperators()">
+      <input class="search-box" id="operators-search" placeholder="Search operators…" oninput="renderLane('operators')">
     </div>
-    <div class="totals-row" id="operators-totals"></div>
     <div id="operators-list"></div>
   </div>
-</div>
 
-<!-- INFRASTRUCTURE -->
-<div class="panel" id="panel-infra">
-  <div class="panel-inner">
-    <div class="ph">
-      <div><div class="ph-title">Infrastructure</div><div class="ph-sub">Spaces, vehicles, storage, facilities</div></div>
-      <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="navAdd('infrastructure')">+ Add infrastructure</button></div>
-    </div>
+  <!-- ── Infrastructure lane ── -->
+  <div class="panel" id="panel-infra">
+    <div class="section-hd">Infrastructure</div>
     <div class="filter-bar">
-      <button class="fbtn active" data-inf="all" onclick="sf(this,'infra')">All</button>
-      <button class="fbtn" data-inf="space" onclick="sf(this,'infra')">Space</button>
-      <button class="fbtn" data-inf="vehicle" onclick="sf(this,'infra')">Vehicle</button>
-      <button class="fbtn" data-inf="storage" onclick="sf(this,'infra')">Storage</button>
-      <button class="fbtn" data-inf="manual" onclick="sf(this,'infra')">Manual</button>
-      <input class="fsearch" id="infra-search" placeholder="Search infrastructure…" oninput="renderInfra()">
+      <input class="search-box" id="infra-search" placeholder="Search infrastructure…" oninput="renderLane('infra')">
     </div>
-    <div class="totals-row" id="infra-totals"></div>
     <div id="infra-list"></div>
   </div>
-</div>
 
-<!-- MATCHED DEALS -->
-<div class="panel" id="panel-matches">
-  <div class="panel-inner">
-    <div class="ph"><div><div class="ph-title">Matched Deals</div><div class="ph-sub">Supply meets demand — scored opportunities</div></div></div>
+  <!-- ── Business For Sale lane ── -->
+  <div class="panel" id="panel-biz">
+    <div class="section-hd">Business For Sale</div>
     <div class="filter-bar">
-      <button class="fbtn active" data-mf="all" onclick="sf(this,'matches')">All</button>
-      <button class="fbtn" data-mf="hi" onclick="sf(this,'matches')">Score ≥ 80</button>
-      <button class="fbtn" data-mf="med" onclick="sf(this,'matches')">Score 60–79</button>
-      <button class="fbtn" data-mf="live" onclick="sf(this,'matches')">Live URLs</button>
-      <input class="fsearch" id="matches-search" placeholder="Search deals…" oninput="renderMatches()">
+      <input class="search-box" id="biz-search" placeholder="Search businesses…" oninput="renderLane('biz')">
     </div>
-    <div class="totals-row" id="matches-totals"></div>
+    <div id="biz-list"></div>
+  </div>
+
+  <!-- ── Events lane ── -->
+  <div class="panel" id="panel-events">
+    <div class="section-hd">Events / Garage / Estate Sales</div>
+    <div class="filter-bar">
+      <input class="search-box" id="events-search" placeholder="Search events…" oninput="renderLane('events')">
+    </div>
+    <div id="events-list"></div>
+  </div>
+
+  <!-- ── Leads lane ── -->
+  <div class="panel" id="panel-leads">
+    <div class="section-hd">Leads</div>
+    <div class="filter-bar">
+      <input class="search-box" id="leads-search" placeholder="Search leads…" oninput="renderLane('leads')">
+    </div>
+    <div id="leads-list"></div>
+  </div>
+
+  <!-- ── Matched Deals ── -->
+  <div class="panel" id="panel-matches">
+    <div class="section-hd">Matched Deals</div>
+    <div class="filter-bar">
+      <input class="search-box" id="matches-search" placeholder="Search matches…" oninput="renderMatches()">
+      <select class="filter-sel" id="matches-sort" onchange="renderMatches()">
+        <option value="score">Highest Score</option>
+        <option value="profit">Highest Profit</option>
+        <option value="spread">Highest Spread</option>
+      </select>
+    </div>
     <div id="matches-list"></div>
   </div>
-</div>
 
-<!-- ASSEMBLY -->
-<div class="panel" id="panel-assembly">
-  <div class="panel-inner">
-    <div class="ph"><div><div class="ph-title">Assembly Opportunities</div><div class="ph-sub">Business-in-a-box combinations</div></div></div>
+  <!-- ── Assembly Opps ── -->
+  <div class="panel" id="panel-assembly">
+    <div class="section-hd">Assembly Opportunities</div>
     <div id="assembly-list"></div>
   </div>
-</div>
 
-<!-- MATCH WORKBENCH -->
-<div class="panel" id="panel-workbench">
-  <div class="panel-inner" style="max-width:100%">
-    <div class="ph"><div><div class="ph-title">Match Workbench</div><div class="ph-sub">Select any item → see possible matches → approve to connect</div></div></div>
-    <div id="workbench-wrap">
-      <div class="wb-pane">
-        <div class="wb-pane-hd">
-          <span>📋</span><span>All Items</span>
-          <div style="margin-left:auto;display:flex;gap:4px;flex-wrap:wrap">
-            <button class="fbtn active" style="padding:2px 7px;font-size:10px" id="wbt-all" onclick="wbFilter('all',this)">All</button>
-            <button class="fbtn" style="padding:2px 7px;font-size:10px" id="wbt-supply" onclick="wbFilter('supply',this)">Supply</button>
-            <button class="fbtn" style="padding:2px 7px;font-size:10px" id="wbt-demand" onclick="wbFilter('demand',this)">Demand</button>
-            <button class="fbtn" style="padding:2px 7px;font-size:10px" id="wbt-operator" onclick="wbFilter('operator',this)">Operator</button>
-          </div>
-        </div>
-        <div class="wb-pane-body" id="wb-items"></div>
-      </div>
-      <div class="wb-pane">
-        <div class="wb-pane-hd"><span>⚡</span><span>Possible Matches</span><span id="wb-selected-title" style="color:var(--green);font-size:10px;margin-left:4px;font-weight:400"></span></div>
-        <div class="wb-pane-body" id="wb-matches"><div class="wb-placeholder">← Select an item on the left to see possible matches</div></div>
+  <!-- ── Workbench ── -->
+  <div class="panel" id="panel-workbench">
+    <div class="section-hd">Match Workbench</div>
+    <div id="match-pending">
+      <div class="match-pending-title">📎 Pending Manual Match</div>
+      <div class="match-pending-item" id="pending-a-label"></div>
+      <div class="match-pending-item" id="pending-b-label"></div>
+      <div class="match-pending-actions">
+        <button class="drawer-action-btn btn-create" onclick="confirmManualMatch()">✓ Create Match</button>
+        <button class="drawer-action-btn" style="border-color:var(--red);color:var(--red)" onclick="clearPending()">✕ Cancel</button>
       </div>
     </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">
+      Click any signal card from any lane to open its detail drawer. From the drawer, click <strong style="color:var(--amber)">+ Manual Match</strong> to link it to another signal.
+    </div>
+    <div class="section-hd">All Manual Matches</div>
+    <div id="workbench-list"></div>
   </div>
-</div>
 
-<!-- VISUAL FLOW -->
-<div class="panel" id="panel-flow">
-  <div class="panel-inner" style="max-width:100%">
-    <div class="ph">
-      <div><div class="ph-title">Visual Flow Builder</div><div class="ph-sub">Connected opportunity chains</div></div>
-      <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="renderFlow()">↻ Rebuild</button></div>
+  <!-- ── Config ── -->
+  <div class="panel" id="panel-config">
+    <div class="section-hd">Sources Configuration</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Edit the <strong>Sources</strong> tab in Google Sheets to change queries, keywords, markets, and enable/disable sources. Run <code>config_reader.py</code> then <code>export_json.py</code> to apply.
     </div>
-    <div class="flow-legend">
-      <div class="fl-item"><div class="fl-dot" style="background:var(--amber)"></div><span style="color:var(--muted)">Supply</span></div>
-      <div class="fl-item"><div class="fl-dot" style="background:var(--blue)"></div><span style="color:var(--muted)">Operator</span></div>
-      <div class="fl-item"><div class="fl-dot" style="background:var(--teal)"></div><span style="color:var(--muted)">Demand</span></div>
-      <div class="fl-item"><div class="fl-dot" style="background:var(--purple)"></div><span style="color:var(--muted)">Assembly</span></div>
-      <div class="fl-item"><div class="fl-dot" style="background:var(--green)"></div><span style="color:var(--muted)">Deal</span></div>
-    </div>
-    <div id="flow-canvas"><div class="flow-stage" id="flow-stage"></div></div>
-  </div>
-</div>
-
-<!-- ADD ITEM -->
-<div class="panel" id="panel-add">
-  <div class="panel-inner">
-    <div class="ph"><div><div class="ph-title">Add Item</div><div class="ph-sub">Paste or enter any signal manually</div></div></div>
-    <div class="add-form">
-      <div class="sec-hd">Paste raw text (Facebook Marketplace, ISO post, Craigslist listing, etc.)</div>
-      <textarea class="paste-area" id="paste-input" placeholder="Paste any raw listing text here — the form below will pre-fill.&#10;&#10;Example: 'ISO pressure washer, willing to pay up to $500, Cincinnati area'&#10;or: 'Selling Manitowoc ice machine 600lb/day, asking $400 OBO, Louisville KY'"></textarea>
-      <button class="btn btn-ghost btn-sm" onclick="parsePaste()">⚡ Parse &amp; pre-fill</button>
-    </div>
-    <div class="add-form">
-      <div class="sec-hd" style="margin-bottom:14px">Item details</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Signal Type</label>
-          <select id="add-type" onchange="updateSourceDropdown()">
-            <option value="supply">Supply (selling / auction / surplus)</option>
-            <option value="demand">Demand / ISO / WTB</option>
-            <option value="operator">Operator / Service Provider</option>
-            <option value="infrastructure">Infrastructure</option>
-            <option value="business_for_sale">Business For Sale</option>
-            <option value="garage_sale">Garage / Estate Sale</option>
-            <option value="lead">Lead / Buyer Prospect</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Source</label>
-          <select id="add-source"></select>
-        </div>
-        <div class="form-group form-full">
-          <label>Title / Description</label>
-          <input type="text" id="add-title" placeholder="e.g. ISO pressure washer — willing to pay $400–$600, Cincinnati area">
-        </div>
-        <div class="form-group"><label>Price / Budget</label><input type="text" id="add-price" placeholder="e.g. $400 OBO"></div>
-        <div class="form-group"><label>Location</label><input type="text" id="add-location" placeholder="City, State or ZIP"></div>
-        <div class="form-group"><label>URL (optional)</label><input type="text" id="add-url" placeholder="https://…"></div>
-        <div class="form-group"><label>Category</label><input type="text" id="add-category" placeholder="e.g. equipment, food service, IT"></div>
-        <div class="form-group form-full"><label>Notes</label><textarea id="add-notes" placeholder="Contact info, follow-up notes, context…"></textarea></div>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" onclick="submitAddItem()">+ Add to Workbench</button>
-        <button class="btn btn-ghost" onclick="clearAddForm()">Clear</button>
-      </div>
-      <div id="add-feedback" style="margin-top:10px;font-size:11px;font-family:var(--font-mono)"></div>
-    </div>
-    <div class="sec-hd">Recently Added (this session)</div>
-    <div id="recently-added-list"><div class="empty" style="padding:16px"><strong>Nothing added yet</strong></div></div>
-  </div>
-</div>
-
-<!-- CONFIG -->
-<div class="panel" id="panel-config">
-  <div class="panel-inner">
-    <div class="ph"><div><div class="ph-title">Config / Sources</div><div class="ph-sub">Configured source lanes — edit in Google Sheets or sources_config.json, then re-run export_json.py</div></div></div>
-
-    <div class="config-section">
-      <h3>Search Location</h3>
-      <div class="form-grid">
-        <div class="form-group"><label>Primary ZIP / City</label><input type="text" id="cfg-zip" placeholder="e.g. 45219 or Cincinnati, OH"></div>
-        <div class="form-group"><label>Search Radius (miles)</label><input type="number" id="cfg-radius" value="75"></div>
-        <div class="form-group"><label>Market Label</label><input type="text" id="cfg-market" placeholder="e.g. Cincinnati Metro"></div>
-        <div class="form-group"><label>Max Buy Price ($)</label><input type="number" id="cfg-max-buy" value="5000"></div>
-      </div>
-      <div class="form-actions" style="margin-top:10px"><button class="btn btn-primary btn-sm" onclick="saveConfig()">Save</button></div>
-      <div id="cfg-feedback" style="margin-top:8px;font-size:11px;font-family:var(--font-mono);color:var(--green)"></div>
-    </div>
-
-    <div class="config-section">
-      <h3>Configured Sources</h3>
-      <div class="config-note" style="margin-bottom:12px">
-        Source rows come from <strong style="color:var(--green);font-family:var(--font-mono)">sources_config.json</strong> (written by export_json.py from your Google Sheet Sources tab).<br>
-        To add/edit sources: update the <strong>Sources</strong> tab in the Google Sheet, then re-run export_json.py and push.<br><br>
-        Sheet ID: <strong style="color:var(--green);font-family:var(--font-mono)">173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w</strong>
-        &nbsp;<button class="btn btn-ghost btn-sm" onclick="copySheetId()" style="font-size:10px;padding:2px 7px">Copy</button>
-      </div>
-      <div class="tbl-wrap">
-        <table class="source-tbl">
-          <thead><tr><th>On</th><th>Source Name</th><th>Type</th><th>Signal</th><th>Market</th><th>ZIP</th><th class="r">Radius</th><th>Query</th><th>Status</th></tr></thead>
-          <tbody id="sources-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="config-section">
-      <h3>Keywords</h3>
-      <div class="form-grid">
-        <div class="form-group"><label>Include Keywords (comma separated)</label><textarea id="cfg-include" placeholder="pressure washer, pallet racking, cisco…"></textarea></div>
-        <div class="form-group"><label>Exclude Keywords (comma separated)</label><textarea id="cfg-exclude" placeholder="broken, parts only, toy…"></textarea></div>
-      </div>
-      <div class="form-actions" style="margin-top:10px"><button class="btn btn-ghost btn-sm" onclick="saveKeywords()">Save Keywords</button></div>
-    </div>
-
-    <div class="config-section">
-      <h3>Export / Seed Settings</h3>
-      <div class="config-note">
-        <strong>Include demo/seed data (default):</strong><br>
-        <code style="color:var(--green)">python export_json.py</code><br><br>
-        <strong>Exclude seed data — show EMPTY if no live/manual records:</strong><br>
-        <code style="color:var(--amber)">python export_json.py --no-seed</code><br><br>
-        To add <code>--no-seed</code> permanently in GitHub Actions, edit <code>.github/workflows/</code> and append the flag to the export_json.py run step.
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- FEED HEALTH -->
-<div class="panel" id="panel-feeds">
-  <div class="panel-inner">
-    <div class="ph"><div><div class="ph-title">Feed Health</div><div class="ph-sub">Source status, last scraped, record counts</div></div></div>
     <div class="tbl-wrap">
-      <table><thead><tr><th>Source</th><th>Status</th><th class="r">Count</th><th>Last Scraped</th><th>Signal Type</th></tr></thead>
-      <tbody id="feeds-tbody"></tbody></table>
+      <table class="config-table">
+        <thead>
+          <tr>
+            <th>On</th><th>Name</th><th>Type</th><th>Signal</th><th>Market</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="config-tbody"></tbody>
+      </table>
     </div>
-    <div class="sec-hd" style="margin-top:16px">P&amp;L Summary</div>
-    <div class="tbl-wrap">
-      <table><thead><tr><th>Source</th><th>Status</th><th class="r">Deals</th><th class="r">Avg Score</th><th class="r">Total Buy</th><th class="r">Sell Est</th><th class="r">Est Profit</th><th class="r">Margin</th></tr></thead>
-      <tbody id="pl-tbody"></tbody></table>
+    <div class="section-hd" style="margin-top:16px">Export Settings</div>
+    <div style="font-size:12px;color:var(--muted)">
+      <div style="margin-bottom:6px"><strong>Include seed/demo data:</strong> run <code>python export_json.py</code></div>
+      <div style="margin-bottom:6px"><strong>Exclude seed/demo data:</strong> run <code>python export_json.py --no-seed</code></div>
+      <div style="margin-bottom:6px"><strong>Clear stale matches:</strong> run <code>python export_json.py --no-seed --clear-stale</code></div>
+      <div style="margin-bottom:6px"><strong>Dry run (check counts only):</strong> run <code>python export_json.py --dry-run</code></div>
     </div>
   </div>
-</div>
 
-</div><!-- /content -->
-</div><!-- /layout -->
+  <!-- ── Feed Health ── -->
+  <div class="panel" id="panel-feeds">
+    <div class="section-hd">Scan Feed Status</div>
+    <div class="tbl-wrap">
+      <table class="pl-table">
+        <thead>
+          <tr><th>Source</th><th>Status</th><th>Count</th><th>Last Scraped</th></tr>
+        </thead>
+        <tbody id="feeds-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── P&L ── -->
+  <div class="panel" id="panel-pl">
+    <div class="section-hd">Profit &amp; Loss by Source</div>
+    <div class="tbl-wrap">
+      <table class="pl-table">
+        <thead>
+          <tr><th>Source</th><th>Status</th><th>Deals</th><th>Avg Score</th><th>Total Buy</th><th>Est Profit</th><th>Avg Margin</th></tr>
+        </thead>
+        <tbody id="pl-tbody"></tbody>
+      </table>
+    </div>
+    <div class="section-hd" style="margin-top:16px">Pipeline Totals</div>
+    <div class="kpi-grid" id="pl-totals"></div>
+  </div>
+
+</div><!-- #app -->
+</div><!-- .main-content -->
+</div><!-- .app-body -->
+
+<!-- ── Detail Drawer ── -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer">
+  <div class="drawer-header">
+    <div class="drawer-title" id="drawer-title">Signal Detail</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// State
+// ═══════════════════════════════════════════════════════════════
 const DATA_URL = 'dashboard.json';
 let D = null;
-let manualItems  = [];
-let sessionAdded = [];
-let wbSelected   = null;
-let wbTypeFilter = 'all';
-const filters = {supply:'all',demand:'all',operators:'all',infra:'all',matches:'all'};
-let CFG = {};
+let sigFilterUrl   = false;
+let sigFilterPhone = false;
 
-try{ manualItems = JSON.parse(localStorage.getItem('gg_manual_items')||'[]'); }catch(e){}
-try{ CFG = JSON.parse(localStorage.getItem('gg_config')||'{}'); }catch(e){}
-CFG.zip=CFG.zip||''; CFG.radius=CFG.radius||75; CFG.market=CFG.market||'';
-CFG.maxBuy=CFG.maxBuy||5000; CFG.include=CFG.include||''; CFG.exclude=CFG.exclude||'';
+// Manual matching state
+let pendingMatchA = null; // first selected signal
+let pendingMatchB = null; // second selected signal
 
-// ── UTIL ───────────────────────────────────────────────
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function $m(v){ return v!=null?'$'+Number(v).toLocaleString('en-US',{maximumFractionDigits:0}):'N/A'; }
-function pct(v){ return v!=null?v+'%':'N/A'; }
-function sc(s){ return s>=80?'sh':s>=60?'sm':'sl'; }
-function dTag(f){ return f?'<span class="demo-tag">DEMO</span>':''; }
-function mTag(f){ return f?'<span class="manual-tag">MANUAL</span>':''; }
-function lnk(url,live){ return (live&&url)?'<a style="font-size:10px;color:var(--blue);text-decoration:none;font-family:var(--font-mono)" href="'+esc(url)+'" target="_blank" rel="noopener">View ↗</a>':''; }
-function empty(t,s){ return '<div class="empty"><strong>'+esc(t)+'</strong>'+(s?'<br>'+esc(s):'')+'</div>'; }
-
-const MODE_TEXT = {
-  DEMO:  '⚠ Demo / seed data only — run scanner.py with live feeds to replace demo records',
-  LIVE:  '✓ Live source data',
-  MANUAL:'✎ Manual / imported records — no live scrape yet',
-  MIXED: '◈ Mixed data: live + manual + seed',
-  EMPTY: '○ No live or manual records found — add items manually or run scanner.py',
-};
-
-function setMode(mode){
-  const b=document.getElementById('mode-badge');
-  const ban=document.getElementById('mode-banner');
-  const txt=document.getElementById('mode-banner-text');
-  b.className='mode-'+mode; b.textContent=mode;
-  ban.className='banner-'+mode+' show';
-  txt.textContent=MODE_TEXT[mode]||mode;
-}
-
-// ── NAV ────────────────────────────────────────────────
-function nav(el){
-  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  const p=document.getElementById('panel-'+el.dataset.panel);
-  if(p) p.classList.add('active');
-  closeSidebar();
-  if(el.dataset.panel==='workbench') renderWorkbench();
-  if(el.dataset.panel==='flow')      renderFlow();
-  if(el.dataset.panel==='config')    renderConfigPanel();
-  if(el.dataset.panel==='add')       updateSourceDropdown();
-}
-function navAdd(type){
-  nav(document.querySelector('[data-panel=add]'));
-  document.getElementById('add-type').value=type;
-  updateSourceDropdown();
-}
-function toggleSidebar(){
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('active');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('overlay').classList.remove('active');
-}
-function sf(btn,group){
-  const attr={supply:'sf',demand:'df',operators:'opf',infra:'inf',matches:'mf'}[group];
-  document.querySelectorAll('[data-'+attr+']').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  filters[group]=btn.dataset[attr];
-  ({supply:renderSupply,demand:renderDemand,operators:renderOperators,infra:renderInfra,matches:renderMatches}[group])();
-}
-
-// ── LOAD ───────────────────────────────────────────────
-async function loadData(){
-  document.getElementById('loading').style.display='flex';
-  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  try{
-    const r=await fetch(DATA_URL+'?_='+Date.now()); D=await r.json();
-  }catch(e){
-    document.getElementById('loading').innerHTML=
-      '<div style="color:var(--red);font-family:var(--font-mono);font-size:12px">✗ Failed to load dashboard.json<br>'+
-      '<span style="color:var(--muted);font-size:11px;display:block;margin-top:6px">Commit docs/dashboard.json and push to GitHub</span></div>';
+// ═══════════════════════════════════════════════════════════════
+// Data loading
+// ═══════════════════════════════════════════════════════════════
+async function loadData() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('app').style.display = 'none';
+  try {
+    const r = await fetch(DATA_URL + '?_=' + Date.now());
+    D = await r.json();
+    // Merge localStorage manual items into all_signals
+    mergeLocalSignals();
+    render();
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date(D.generated_at).toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('loading').innerHTML =
+      '<strong style="color:var(--red)">Could not load dashboard.json</strong>' +
+      '<div style="margin-top:8px;font-size:12px">Make sure export_json.py has run and committed the file.</div>';
     return;
   }
-  document.getElementById('loading').style.display='none';
-  document.querySelector('[data-panel=dashboard]').click();
-  render();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
 }
 
-// ── RENDER ─────────────────────────────────────────────
-function render(){
-  let mode=D.data_mode||'DEMO';
-  const mc=manualItems.length;
-  if(mc>0&&mode==='DEMO')  mode='MIXED';
-  if(mc>0&&mode==='EMPTY') mode='MANUAL';
-  if(mc>0&&mode==='LIVE')  mode='MIXED';
-  setMode(mode);
-
-  document.getElementById('last-updated').textContent=D.generated_at?new Date(D.generated_at).toLocaleString():'—';
-
-  const demandDB=(D.buyer_leads||[]).length;
-  const demandM=manualItems.filter(i=>i.type==='demand').length;
-  document.getElementById('sb-supply').textContent   =D.supply_opps.length+manualItems.filter(i=>i.type==='supply').length;
-  document.getElementById('sb-demand').textContent   =demandDB+demandM;
-  document.getElementById('sb-operators').textContent=manualItems.filter(i=>i.type==='operator').length;
-  document.getElementById('sb-infra').textContent    =manualItems.filter(i=>i.type==='infrastructure').length;
-  document.getElementById('sb-matches').textContent  =D.matched_deals.length;
-  document.getElementById('sb-assembly').textContent =D.assembly_opps.length;
-  document.getElementById('sb-feeds').textContent    =D.feed_summary.length;
-  document.getElementById('sb-sources').textContent  =(D.sources_config||[]).filter(s=>s.enabled).length;
-  document.getElementById('sb-hot').textContent      =D.kpi.hot_matches;
-  document.getElementById('sb-profit').textContent   =$m(D.kpi.total_profit_est);
-  document.getElementById('sb-asm-count').textContent=D.kpi.assembly_count;
-
-  const liveTs=D.last_live_scan_at?' · live scan: '+D.last_live_scan_at.slice(0,10):'';
-  document.getElementById('dash-sub').textContent=
-    'Mode: '+mode+liveTs+
-    ' · Supply: '+(D.live_supply_count||0)+' live / '+(D.manual_supply_count||0)+' manual / '+(D.seed_supply_count||0)+' demo';
-
-  buildSupplyFilters();
-  renderDashboard(); renderSupply(); renderDemand(); renderOperators();
-  renderInfra(); renderMatches(); renderAssembly(); renderFeeds();
+// ═══════════════════════════════════════════════════════════════
+// localStorage manual signals + manual matches
+// ═══════════════════════════════════════════════════════════════
+function getManualSignals() {
+  try { return JSON.parse(localStorage.getItem('ggg_manual_signals') || '[]'); } catch { return []; }
+}
+function getManualMatches() {
+  try { return JSON.parse(localStorage.getItem('ggg_manual_matches') || '[]'); } catch { return []; }
+}
+function saveManualMatches(mm) {
+  localStorage.setItem('ggg_manual_matches', JSON.stringify(mm));
 }
 
-function buildSupplyFilters(){
-  const sources=(D.sources_config||[]);
-  const supplyTypes=[...new Set(
-    sources.filter(s=>['supply','garage_sale','business_for_sale'].includes(s.signal_type)).map(s=>s.source_type)
-  )];
-  const bar=document.getElementById('supply-filters');
-  const search=document.getElementById('supply-search');
-  bar.innerHTML='<button class="fbtn active" data-sf="all" onclick="sf(this,\'supply\')">All</button>';
-  supplyTypes.forEach(st=>{
-    const src=sources.find(s=>s.source_type===st);
-    const label=src?src.source_name.split('—')[0].trim().split(' ').slice(0,3).join(' '):st;
-    bar.innerHTML+='<button class="fbtn" data-sf="'+esc(st)+'" onclick="sf(this,\'supply\')">'+esc(label)+'</button>';
-  });
-  bar.innerHTML+='<button class="fbtn" data-sf="manual" onclick="sf(this,\'supply\')">Manual</button>';
-  bar.appendChild(search);
-}
-
-// ── DASHBOARD ──────────────────────────────────────────
-function renderDashboard(){
-  const k=D.kpi; const mc=manualItems.length;
-  document.getElementById('kpi-main').innerHTML=
-    kC(D.live_supply_count||0,'Live Supply','cv-green')+
-    kC((D.manual_supply_count||0)+mc,'Manual Records','cv-blue')+
-    kC(D.seed_supply_count||0,'Demo Records','cv-red')+
-    kC((D.buyer_leads||[]).length+manualItems.filter(i=>i.type==='demand').length,'Demand Signals','cv-teal')+
-    kC(k.hot_matches,'Hot Matches','cv-green')+
-    kC($m(k.total_profit_est),'Est Profit','cv-green')+
-    kC(k.assembly_count,'Assembly Opps','cv-purple')+
-    kC(k.avg_score,'Avg Score','cv-amber');
-  const t5=D.matched_deals.slice(0,5);
-  document.getElementById('dash-matches').innerHTML=t5.length?t5.map(matchCard).join(''):empty('No matched deals yet','Run matcher.py after adding supply and demand items');
-  const t3=D.assembly_opps.slice(0,3);
-  document.getElementById('dash-assembly').innerHTML=t3.length?t3.map(asmCard).join(''):empty('No assembly opportunities yet','');
-}
-function kC(val,lbl,cls){ return '<div class="kpi-card"><div class="kpi-val '+cls+'">'+val+'</div><div class="kpi-lbl">'+lbl+'</div></div>'; }
-
-// ── SUPPLY ─────────────────────────────────────────────
-function renderSupply(){
-  const q=(document.getElementById('supply-search').value||'').toLowerCase();
-  let rows=[...D.supply_opps,...manualItems.filter(i=>i.type==='supply').map(m2s)];
-  const f=filters.supply;
-  if(f==='manual') rows=rows.filter(r=>r.is_manual);
-  else if(f!=='all') rows=rows.filter(r=>r.source===f);
-  if(q) rows=rows.filter(r=>(r.title+r.source+r.location+r.category).toLowerCase().includes(q));
-  const tb=rows.reduce((a,r)=>a+(r.price_est||0),0);
-  const sc2=rows.filter(r=>r.is_seed).length;
-  document.getElementById('supply-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span> · Buy est: <span class="tv">'+$m(tb)+'</span>'+(sc2?' · <span style="color:var(--red);font-size:10px">'+sc2+' demo</span>':'');
-  document.getElementById('supply-list').innerHTML=rows.length?rows.map(supplyCard).join(''):empty('No supply items','Run scanner.py or use + Add manually');
-}
-function supplyCard(r){
-  return '<div class="card"><div class="card-top"><div class="card-title">'+esc(r.title)+' '+dTag(r.is_seed)+mTag(r.is_manual)+'</div></div>'+
-    '<div class="card-meta"><span class="tag">'+esc((r.source||'').toUpperCase())+'</span>'+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.end_date?'<span class="tag tag-amber">Ends '+r.end_date+'</span>':'')+'</div>'+
-    '<div class="card-nums"><span class="n-buy">List: <strong>'+esc(r.price_raw||'N/A')+'</strong></span>'+(r.price_est?'<span class="n-buy">Est: '+$m(r.price_est)+'</span>':'')+'</div>'+
-    (r.keywords&&r.keywords.length?'<div style="margin-top:4px;font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+r.keywords.slice(0,6).map(esc).join(', ')+'</div>':'')+
-    (r.notes?'<div style="margin-top:4px;font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+
-    lnk(r.url,r.url_live)+'</div>';
-}
-function m2s(m){
-  return {id:m.id,title:m.title,source:m.source_type||m.source||'manual',url:m.url||'',url_live:!!(m.url&&m.url.startsWith('http')),
-    price_raw:m.price||'',price_est:parseFloat((m.price||'').replace(/[^0-9.]/g,''))||null,
-    location:m.location||'',category:m.category||'',end_date:'',scraped_at:m.added_at||'',
-    keywords:[],status:'new',signal_type:m.type||'supply',is_seed:false,is_manual:true,notes:m.notes||''};
-}
-
-// ── DEMAND ─────────────────────────────────────────────
-function renderDemand(){
-  const q=(document.getElementById('demand-search').value||'').toLowerCase();
-  let rows=[...(D.buyer_leads||[]),...manualItems.filter(i=>i.type==='demand').map(m=>({
-    id:m.id,name:m.title,role:m.subtype||'iso',category:m.category||'',location:m.location||'',
-    zip:'',phone:'',website:'',website_live:false,rating:null,confidence:50,source_zip:'',
-    status:'new',is_seed:false,is_manual:true,price:m.price||'',notes:m.notes||''
-  }))];
-  const f=filters.demand;
-  if(f!=='all') rows=rows.filter(r=>f==='manual'?r.is_manual:r.role===f);
-  if(q) rows=rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
-  document.getElementById('demand-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span>';
-  document.getElementById('demand-list').innerHTML=rows.length?rows.map(demandCard).join(''):empty('No demand signals yet','Add ISO / WTB posts or run Craigslist Wanted scraper');
-}
-function demandCard(r){
-  const rc={iso:'teal',wtb:'teal',service_request:'blue',buyer:'teal',supplier:'amber'}[r.role]||'muted';
-  return '<div class="demand-card"><div class="card-top"><div class="card-title">'+esc(r.name)+' '+mTag(r.is_manual)+dTag(r.is_seed)+'</div>'+
-    '<span class="tag tag-'+rc+'" style="flex-shrink:0;font-size:10px">'+esc((r.role||'ISO').toUpperCase())+'</span></div>'+
-    '<div class="card-meta">'+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+'</div>'+
-    (r.price?'<div style="font-size:11px;color:var(--amber);font-family:var(--font-mono)">Budget: '+esc(r.price)+'</div>':'')+
-    (r.notes?'<div style="margin-top:4px;font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+
-    (r.phone?'<div style="margin-top:4px;font-size:11px"><a href="tel:'+esc(r.phone)+'" style="color:var(--blue)">'+esc(r.phone)+'</a></div>':'')+
-  '</div>';
-}
-
-// ── OPERATORS ──────────────────────────────────────────
-function renderOperators(){
-  const q=(document.getElementById('operators-search').value||'').toLowerCase();
-  let rows=manualItems.filter(i=>i.type==='operator').map(m=>({name:m.title,subtype:m.subtype||'service',category:m.category||'',location:m.location||'',notes:m.notes||'',is_manual:true,price:m.price||''}));
-  const f=filters.operators;
-  if(f!=='all') rows=rows.filter(r=>f==='manual'?r.is_manual:r.subtype===f);
-  if(q) rows=rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
-  document.getElementById('operators-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span>';
-  document.getElementById('operators-list').innerHTML=rows.length
-    ?rows.map(r=>'<div class="operator-card"><div class="card-top"><div class="card-title">'+esc(r.name)+' '+mTag(r.is_manual)+'</div><span class="tag tag-blue" style="flex-shrink:0;font-size:10px">'+esc((r.subtype||'OPERATOR').toUpperCase())+'</span></div><div class="card-meta">'+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+'</div>'+(r.notes?'<div style="font-size:11px;color:var(--muted)">'+esc(r.notes)+'</div>':'')+'</div>').join('')
-    :empty('No operators yet','Add contractors, resellers, service providers');
-}
-
-// ── INFRA ──────────────────────────────────────────────
-function renderInfra(){
-  const q=(document.getElementById('infra-search').value||'').toLowerCase();
-  let rows=manualItems.filter(i=>i.type==='infrastructure').map(m=>({name:m.title,subtype:m.subtype||'space',category:m.category||'',location:m.location||'',notes:m.notes||'',is_manual:true,price:m.price||''}));
-  const f=filters.infra;
-  if(f!=='all') rows=rows.filter(r=>f==='manual'?r.is_manual:r.subtype===f);
-  if(q) rows=rows.filter(r=>(r.name+r.category+r.location).toLowerCase().includes(q));
-  document.getElementById('infra-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span>';
-  document.getElementById('infra-list').innerHTML=rows.length
-    ?rows.map(r=>'<div class="infra-card"><div class="card-top"><div class="card-title">'+esc(r.name)+' '+mTag(r.is_manual)+'</div><span class="tag tag-amber" style="flex-shrink:0;font-size:10px">'+esc((r.subtype||'INFRA').toUpperCase())+'</span></div><div class="card-meta">'+(r.category?'<span class="tag">'+esc(r.category)+'</span>':'')+(r.location?'<span class="tag">'+esc(r.location)+'</span>':'')+'</div>'+(r.price?'<div style="font-size:11px;color:var(--amber);font-family:var(--font-mono)">'+esc(r.price)+'</div>':'')+(r.notes?'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+esc(r.notes)+'</div>':'')+'</div>').join('')
-    :empty('No infrastructure yet','Add spaces, vehicles, storage, facilities');
-}
-
-// ── MATCHES ────────────────────────────────────────────
-function renderMatches(){
-  const q=(document.getElementById('matches-search').value||'').toLowerCase();
-  let rows=[...D.matched_deals];
-  const f=filters.matches;
-  if(f==='hi')   rows=rows.filter(r=>r.score>=80);
-  if(f==='med')  rows=rows.filter(r=>r.score>=60&&r.score<80);
-  if(f==='live') rows=rows.filter(r=>r.supply_url_live);
-  if(q) rows=rows.filter(r=>(r.supply_title+r.buyer_name+r.supply_source).toLowerCase().includes(q));
-  const tp=rows.reduce((a,r)=>a+(r.profit_est||0),0);
-  const ts=rows.reduce((a,r)=>a+(r.sell_est||0),0);
-  const sc2=rows.filter(r=>r.is_seed).length;
-  document.getElementById('matches-totals').innerHTML='Showing <span class="tv">'+rows.length+'</span> · Pipeline: <span class="tv">'+$m(ts)+'</span> · Profit: <span class="tg2">'+$m(tp)+'</span>'+(sc2?' · <span style="color:var(--red);font-size:10px">'+sc2+' demo</span>':'');
-  document.getElementById('matches-list').innerHTML=rows.length?rows.map(matchCard).join(''):empty('No matched deals','Run matcher.py after scanner.py');
-}
-function matchCard(r){
-  return '<div class="card"><div class="card-top"><div class="card-title">'+esc(r.supply_title)+' '+dTag(r.is_seed)+mTag(r.is_manual)+'</div><span class="score-badge '+sc(r.score)+'">'+r.score+'</span></div>'+
-    '<div class="deal-sides"><div class="side-box side-supply"><div class="side-label">Supply / Buy</div>'+
-    '<div>'+esc(r.supply_source.toUpperCase())+'</div>'+
-    '<div style="color:var(--muted);font-size:10px;font-family:var(--font-mono)">'+esc(r.supply_location||'—')+'</div>'+
-    '<div style="margin-top:3px"><strong>Buy: '+$m(r.buy_price)+'</strong>'+(r.buy_price_raw?' ('+esc(r.buy_price_raw)+')':'')+'</div>'+
-    (r.supply_end_date?'<div style="color:var(--amber);font-size:10px;font-family:var(--font-mono)">Ends '+r.supply_end_date+'</div>':'')+lnk(r.supply_url,r.supply_url_live)+
-    '</div><div class="side-box side-buyer"><div class="side-label">Demand / Sell</div>'+
-    '<div><strong>'+esc(r.buyer_name)+'</strong></div>'+
-    '<div style="margin-top:3px;font-family:var(--font-mono);font-size:11px">Sell est: <strong style="color:var(--teal)">'+$m(r.sell_est)+'</strong><br>Spread: <strong style="color:var(--amber)">'+$m(r.spread)+'</strong><br>Margin: <strong style="color:var(--green)">'+pct(r.margin_pct)+'</strong><br>Profit: <strong style="color:var(--green)">'+$m(r.profit_est)+'</strong></div>'+
-    '</div></div>'+(r.match_reason?'<div class="reason-box">📌 '+esc(r.match_reason)+'</div>':'')+
-    (r.next_action?'<div class="action-box"><div class="action-label">Next action</div>'+esc(r.next_action)+'</div>':'')+
-  '</div>';
-}
-
-// ── ASSEMBLY ───────────────────────────────────────────
-function renderAssembly(){
-  document.getElementById('assembly-list').innerHTML=D.assembly_opps.length?D.assembly_opps.map(asmCard).join(''):empty('No assembly opportunities yet','Run matcher.py with multi-category data');
-}
-function asmCard(r){
-  return '<div class="asm-card"><div class="card-top"><div class="card-title">'+esc(r.title)+' '+dTag(r.is_seed)+'</div><span class="asm-conf">'+r.confidence+'% confidence</span></div>'+
-    '<div class="asm-desc">'+esc(r.description)+'</div>'+
-    '<div class="asm-items">'+(r.categories||[]).map(c=>'<span class="asm-item">'+esc(c)+'</span>').join('')+'</div>'+
-    '<div class="card-nums"><span class="n-buy">Buy: <strong>'+$m(r.total_buy)+'</strong></span><span class="n-sell">Revenue: <strong>'+$m(r.revenue_est)+'</strong></span><span class="n-profit">Profit: <strong>'+$m(r.profit_est)+'</strong></span></div>'+
-    (r.next_action?'<div class="asm-action"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--purple);font-family:var(--font-mono);margin-bottom:2px">Next Action</div>'+esc(r.next_action)+'</div>':'')+
-  '</div>';
-}
-
-// ── FEED HEALTH ────────────────────────────────────────
-function renderFeeds(){
-  const sources=D.sources_config||[];
-  document.getElementById('feeds-tbody').innerHTML=D.feed_summary.length
-    ?D.feed_summary.map(r=>{
-        const dc=r.status==='matched'?'fdot-ok':r.status==='new'?'fdot-warn':'fdot-err';
-        const ts=(r.last_scraped||'').slice(0,16).replace('T',' ')||'—';
-        const src=sources.find(s=>s.source_type===r.source||s.source_name===r.source)||{};
-        return '<tr><td><span class="fdot '+dc+'"></span>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.count+'</td><td style="font-family:var(--font-mono);font-size:10px">'+ts+'</td><td><span class="tag" style="font-size:9px">'+esc(src.signal_type||'—')+'</span></td></tr>';
-    }).join('')
-    :'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px;font-family:var(--font-mono)">No feed data — run scanner.py</td></tr>';
-
-  document.getElementById('pl-tbody').innerHTML=(D.pl_summary||[]).length
-    ?D.pl_summary.map(r=>'<tr><td>'+esc(r.source)+'</td><td>'+esc(r.status)+'</td><td class="r">'+r.deal_count+'</td><td class="r ta">'+r.avg_score+'</td><td class="r tm">'+$m(r.total_buy)+'</td><td class="r tt">'+$m(r.total_sell_est)+'</td><td class="r tg">'+$m(r.total_profit_est)+'</td><td class="r ta">'+pct(r.avg_margin_pct)+'</td></tr>').join('')
-    :'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No P&L data yet</td></tr>';
-}
-
-// ── WORKBENCH ──────────────────────────────────────────
-function buildWbItems(){
-  const items=[];
-  D.supply_opps.forEach(r=>items.push({id:r.id,title:r.title,lane:'supply',source:r.source,price:r.price_raw,is_seed:r.is_seed}));
-  (D.buyer_leads||[]).forEach(r=>items.push({id:r.id,title:r.name,lane:'demand',source:'db',price:''}));
-  manualItems.forEach(m=>items.push({id:m.id,title:m.title,lane:m.type,source:'manual',price:m.price||''}));
-  return items;
-}
-function renderWorkbench(){
-  if(!D) return;
-  const all=buildWbItems();
-  const filtered=wbTypeFilter==='all'?all:all.filter(i=>i.lane===wbTypeFilter);
-  document.getElementById('wb-items').innerHTML=filtered.length
-    ?filtered.map(i=>'<div class="wb-item'+(wbSelected&&wbSelected.id===i.id?' selected':'')+'" onclick="wbSelect(\''+i.id+'\')"><div class="wb-item-title">'+esc(i.title)+'</div><div class="wb-item-meta">'+esc(i.lane.toUpperCase())+' · '+esc(i.source||'manual')+(i.price?' · '+esc(i.price):'')+'</div></div>').join('')
-    :'<div class="wb-placeholder">No items in this lane</div>';
-}
-function wbFilter(type,btn){
-  wbTypeFilter=type;
-  ['all','supply','demand','operator'].forEach(t=>{ const el=document.getElementById('wbt-'+t); if(el) el.classList.remove('active'); });
-  btn.classList.add('active');
-  renderWorkbench();
-}
-function wbSelect(id){
-  const all=buildWbItems(); wbSelected=all.find(i=>i.id===id);
-  renderWorkbench();
-  if(!wbSelected) return;
-  document.getElementById('wb-selected-title').textContent='— '+wbSelected.title.slice(0,35);
-  const sugg=[];
-  if(wbSelected.lane==='supply'){
-    D.matched_deals.filter(m=>m.listing_id===id).forEach(m=>sugg.push({type:'buyer',label:m.buyer_name,meta:'Score '+m.score+' · '+$m(m.profit_est),reason:m.match_reason,action:m.next_action}));
-    D.assembly_opps.filter(a=>(a.listing_ids||[]).includes(id)).forEach(a=>sugg.push({type:'assembly',label:a.title,meta:a.confidence+'% conf · '+$m(a.profit_est),reason:a.description,action:a.next_action}));
-    manualItems.filter(m=>m.type==='demand'&&kwo(wbSelected.title,m.title)>0).forEach(m=>sugg.push({type:'buyer',label:m.title,meta:'Manual demand',reason:'Keyword overlap',action:'Reach out directly'}));
-  } else if(wbSelected.lane==='demand'){
-    D.supply_opps.forEach(s=>{ if(kwo(wbSelected.title,s.title)>0) sugg.push({type:'seller',label:s.title,meta:s.source+' · '+$m(s.price_est),reason:'Keyword overlap',action:'Compare price, confirm condition'}); });
-    D.matched_deals.filter(m=>m.buyer_name===wbSelected.title).forEach(m=>sugg.push({type:'seller',label:m.supply_title,meta:'Score '+m.score,reason:m.match_reason,action:m.next_action}));
+function mergeLocalSignals() {
+  const local = getManualSignals();
+  if (!local.length) return;
+  const mm = getManualMatches();
+  const matchedIds = new Set(mm.flatMap(m => [m.source_id, m.target_id]));
+  const extra = local.map(s => ({
+    ...s,
+    data_origin: 'manual',
+    is_manual: true,
+    is_seed: false,
+    match_status: matchedIds.has(s.id) ? 'manual_match' : 'unmatched',
+    normalized_signal_type: s.normalized_signal_type || s.signal_type || 'supply',
+  }));
+  D.all_signals = [...(D.all_signals || []), ...extra];
+  D.unmatched_signals = D.all_signals.filter(s => s.match_status === 'unmatched');
+  // Rebuild lane splits
+  const LANE_MAP = {supply:'supply_items',demand:'demand_items',operator:'operator_items',
+    infrastructure:'infrastructure_items',business_for_sale:'business_for_sale_items',
+    event:'event_items',lead:'lead_items'};
+  for (const [lane, key] of Object.entries(LANE_MAP)) {
+    D[key] = D.all_signals.filter(s => s.normalized_signal_type === lane);
   }
-  manualItems.filter(m=>m.type==='operator'&&kwo(wbSelected.title,m.title)>0).forEach(op=>sugg.push({type:'operator',label:op.title,meta:'Operator · '+op.location,reason:'Capability match',action:'Contact for execution'}));
-  document.getElementById('wb-matches').innerHTML=sugg.length
-    ?sugg.map(s=>'<div class="wb-match"><div class="wb-match-header"><span class="wb-match-type wmt-'+s.type+'">'+s.type.toUpperCase()+'</span><button class="wb-approve-btn" onclick="wbApprove(\''+esc(s.label).replace(/'/g,"\\'")+'\'">✓ Approve</button></div><div style="font-weight:600;font-size:12px;margin-bottom:2px">'+esc(s.label)+'</div><div style="font-size:10px;color:var(--muted);font-family:var(--font-mono)">'+esc(s.meta)+'</div>'+(s.reason?'<div style="font-size:10px;color:var(--muted);margin-top:3px;border-left:2px solid var(--border2);padding-left:6px">'+esc(s.reason.slice(0,140))+'</div>':'')+(s.action?'<div style="font-size:10px;color:var(--green);margin-top:3px;font-family:var(--font-mono)">→ '+esc(s.action.slice(0,110))+'</div>':'')+'</div>').join('')
-    :'<div class="wb-placeholder">No matches found.<br>Add demand or operator records to see suggestions.</div>';
-}
-function kwo(a,b){
-  const stop=new Set(['the','and','for','with','from','that','this','are','was','has','not','but','you','our']);
-  const wa=a.toLowerCase().split(/\W+/).filter(w=>w.length>2&&!stop.has(w));
-  const wb2=b.toLowerCase().split(/\W+/).filter(w=>w.length>2&&!stop.has(w));
-  return wa.filter(w=>wb2.includes(w)).length;
-}
-function wbApprove(label){ alert('✓ Match noted: "'+label+'"\n\nIn a future version this will write a confirmed match record to the database.'); }
-
-// ── VISUAL FLOW ────────────────────────────────────────
-function renderFlow(){
-  if(!D) return;
-  const rows=[];
-  D.matched_deals.slice(0,6).forEach(m=>{
-    const op=manualItems.find(x=>x.type==='operator'&&kwo(m.supply_title,x.title)>0);
-    let row='<div class="flow-row">'+fN('fn-supply','SUPPLY',m.supply_title.slice(0,28),m.supply_source+' · '+$m(m.buy_price))+fA();
-    if(op) row+=fN('fn-operator','OPERATOR',op.title.slice(0,28),op.location||'manual')+fA();
-    row+=fN('fn-demand','DEMAND',m.buyer_name.slice(0,28),'Sell: '+$m(m.sell_est))+fA()+fN('fn-deal','DEAL','Profit: '+$m(m.profit_est),'Score '+m.score)+'</div>';
-    rows.push(row);
-  });
-  D.assembly_opps.slice(0,3).forEach(a=>{
-    const cats=(a.categories||[]).slice(0,2).map(c=>fN('fn-supply','SUPPLY',c.slice(0,28),''));
-    rows.push('<div class="flow-row">'+cats.join(fA())+fA()+fN('fn-assembly','ASSEMBLY',a.title.slice(0,28),'Rev: '+$m(a.revenue_est))+'</div>');
-  });
-  const ms=manualItems.filter(x=>x.type==='supply'); const md=manualItems.filter(x=>x.type==='demand');
-  if(ms.length&&md.length) ms.slice(0,3).forEach((s,i)=>{ const d=md[i%md.length]; rows.push('<div class="flow-row">'+fN('fn-supply','MANUAL',s.title.slice(0,28),s.price||'')+fA()+fN('fn-demand','DEMAND',d.title.slice(0,28),d.location||'')+'</div>'); });
-  document.getElementById('flow-stage').innerHTML=rows.length?rows.join(''):empty('No flow data yet','Add supply and demand items to build chains');
-}
-function fN(cls,type,title,meta){ return '<div class="flow-node '+cls+'"><div class="flow-node-type">'+esc(type)+'</div><div class="flow-node-title">'+esc(title)+'</div>'+(meta?'<div class="flow-node-meta">'+esc(meta)+'</div>':'')+'</div>'; }
-function fA(){ return '<div class="flow-arrow"><svg viewBox="0 0 40 14" fill="none"><line x1="0" y1="7" x2="34" y2="7" stroke="#2e3248" stroke-width="1.5"/><polygon points="34,3 40,7 34,11" fill="#2e3248"/></svg></div>'; }
-
-// ── ADD ITEM ───────────────────────────────────────────
-function updateSourceDropdown(){
-  const type=document.getElementById('add-type').value;
-  const sel=document.getElementById('add-source');
-  const sources=(D&&D.sources_config)||[];
-  const typeMap={supply:['supply','garage_sale','business_for_sale'],demand:['demand'],operator:['operator'],infrastructure:['infrastructure'],business_for_sale:['business_for_sale'],garage_sale:['garage_sale'],lead:['lead']};
-  const allowed=typeMap[type]||[type];
-  const matching=sources.filter(s=>allowed.includes(s.signal_type));
-  sel.innerHTML=(matching.length?matching.map(s=>'<option value="'+esc(s.source_type)+'">'+esc(s.source_name)+'</option>').join(''):'')+
-    '<option value="manual">Manual Entry</option><option value="other">Other</option>';
-}
-function parsePaste(){
-  const raw=document.getElementById('paste-input').value.trim(); if(!raw) return;
-  const lc=raw.toLowerCase();
-  let type='supply';
-  if(/\biso\b|\bwanted\b|\bwtb\b|\blooking for\b|\bneed(ing)?\b|\bwilling to pay\b/.test(lc)) type='demand';
-  else if(/\boffering\b|\bprovid(e|ing)\b|\bservice\b|\bcontract/.test(lc)) type='operator';
-  const pm=raw.match(/\$[\d,]+(?:\.\d{2})?/);
-  const lm=raw.match(/([A-Z][a-zA-Z\s]{2,}),\s*([A-Z]{2})\b|(\d{5})/);
-  document.getElementById('add-type').value=type; updateSourceDropdown();
-  document.getElementById('add-title').value=raw.split('\n')[0].slice(0,120);
-  if(pm) document.getElementById('add-price').value=pm[0];
-  if(lm) document.getElementById('add-location').value=lm[0];
-  if(raw.length>120) document.getElementById('add-notes').value=raw.slice(120).trim();
-}
-function submitAddItem(){
-  const type=document.getElementById('add-type').value;
-  const source=document.getElementById('add-source').value;
-  const title=document.getElementById('add-title').value.trim();
-  const price=document.getElementById('add-price').value.trim();
-  const location=document.getElementById('add-location').value.trim();
-  const url=document.getElementById('add-url').value.trim();
-  const category=document.getElementById('add-category').value.trim();
-  const notes=document.getElementById('add-notes').value.trim();
-  if(!title){ showFeedback('⚠ Title is required','var(--red)'); return; }
-  const item={id:'manual_'+Date.now(),type,source_type:source,source,title,price,location,url,category,notes,added_at:new Date().toISOString().slice(0,10),is_manual:true};
-  manualItems.push(item); sessionAdded.push(item);
-  try{ localStorage.setItem('gg_manual_items',JSON.stringify(manualItems)); }catch(e){}
-  showFeedback('✓ Added: '+title,'var(--green)');
-  renderRecentlyAdded(); clearAddForm(); if(D) render();
-}
-function showFeedback(msg,color){ const el=document.getElementById('add-feedback'); el.style.color=color; el.textContent=msg; setTimeout(()=>el.textContent='',3000); }
-function clearAddForm(){ ['add-title','add-price','add-location','add-url','add-category','add-notes','paste-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';}); }
-function renderRecentlyAdded(){
-  document.getElementById('recently-added-list').innerHTML=sessionAdded.length
-    ?[...sessionAdded].reverse().map(m=>'<div class="card" style="margin-bottom:6px"><div class="card-top"><div class="card-title">'+esc(m.title)+'</div><span class="tag tag-blue" style="font-size:9px;flex-shrink:0">'+esc(m.type.toUpperCase())+'</span></div><div class="card-meta"><span class="tag">'+esc(m.source||'manual')+'</span>'+(m.location?'<span class="tag">'+esc(m.location)+'</span>':'')+(m.price?'<span class="tag tag-amber">'+esc(m.price)+'</span>':'')+'</div>'+(m.notes?'<div style="font-size:11px;color:var(--muted)">'+esc(m.notes)+'</div>':'')+'</div>').join('')
-    :'<div class="empty" style="padding:16px"><strong>Nothing added yet</strong></div>';
+  // Bump mode if needed
+  if (D.data_mode === 'EMPTY' && D.all_signals.length > 0) D.data_mode = 'SIGNALS_ONLY';
 }
 
-// ── CONFIG PANEL ───────────────────────────────────────
-function renderConfigPanel(){
-  document.getElementById('cfg-zip').value=CFG.zip||'';
-  document.getElementById('cfg-radius').value=CFG.radius||75;
-  document.getElementById('cfg-market').value=CFG.market||'';
-  document.getElementById('cfg-max-buy').value=CFG.maxBuy||5000;
-  document.getElementById('cfg-include').value=CFG.include||'';
-  document.getElementById('cfg-exclude').value=CFG.exclude||'';
-  const sources=(D&&D.sources_config)||[];
-  const sl={'live':'scraper-live','manual':'scraper-manual','not_implemented':'scraper-none'};
-  const sl2={'live':'✓ live','manual':'✎ manual','not_implemented':'— not yet'};
-  const sigCol={supply:'amber',demand:'teal',operator:'blue',lead:'purple',garage_sale:'amber',business_for_sale:'purple'};
-  document.getElementById('sources-tbody').innerHTML=sources.length
-    ?sources.map(s=>'<tr><td><span class="enabled-dot '+(s.enabled?'enabled-on':'enabled-off')+'"></span>'+(s.enabled?'Yes':'No')+'</td><td style="font-weight:600">'+esc(s.source_name)+'</td><td><span class="tag" style="font-size:9px">'+esc(s.source_type)+'</span></td><td><span class="tag tag-'+(sigCol[s.signal_type]||'muted')+'" style="font-size:9px">'+esc(s.signal_type)+'</span></td><td>'+esc(s.market||'—')+'</td><td style="font-family:var(--font-mono)">'+esc(s.zip||'—')+'</td><td class="r" style="font-family:var(--font-mono)">'+esc(s.radius_miles||'—')+'</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;color:var(--muted)">'+esc((s.query||'').slice(0,55))+'</td><td class="'+(sl[s.scraper_status]||'scraper-none')+'">'+esc(sl2[s.scraper_status]||s.scraper_status||'—')+'</td></tr>').join('')
-    :'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:16px;font-family:var(--font-mono)">No sources config — run export_json.py to generate</td></tr>';
-}
-function saveConfig(){
-  CFG.zip=document.getElementById('cfg-zip').value.trim();
-  CFG.radius=parseInt(document.getElementById('cfg-radius').value)||75;
-  CFG.market=document.getElementById('cfg-market').value.trim();
-  CFG.maxBuy=parseInt(document.getElementById('cfg-max-buy').value)||5000;
-  try{ localStorage.setItem('gg_config',JSON.stringify(CFG)); }catch(e){}
-  const fb=document.getElementById('cfg-feedback'); fb.textContent='✓ Saved'; setTimeout(()=>fb.textContent='',2500);
-}
-function saveKeywords(){
-  CFG.include=document.getElementById('cfg-include').value.trim();
-  CFG.exclude=document.getElementById('cfg-exclude').value.trim();
-  try{ localStorage.setItem('gg_config',JSON.stringify(CFG)); }catch(e){}
-}
-function copySheetId(){
-  navigator.clipboard.writeText('173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w').catch(()=>{}).then(()=>alert('Sheet ID copied'));
+// ═══════════════════════════════════════════════════════════════
+// Render
+// ═══════════════════════════════════════════════════════════════
+function render() {
+  renderBanner();
+  renderKPIs();
+  renderLaneSummary();
+  renderDashMatches();
+  renderDashUnmatched();
+  renderSignals();
+  renderLane('supply');
+  renderLane('demand');
+  renderLane('operators');
+  renderLane('infra');
+  renderLane('biz');
+  renderLane('events');
+  renderLane('leads');
+  renderMatches();
+  renderAssembly();
+  renderWorkbench();
+  renderConfig();
+  renderFeeds();
+  renderPL();
+  updateCounts();
 }
 
-// ── INIT ───────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// Banner
+// ═══════════════════════════════════════════════════════════════
+const MODE_MSGS = {
+  EMPTY:        '⬜ EMPTY — No signals collected yet. Run the scanner or add items manually.',
+  SIGNALS_ONLY: '📡 SIGNALS FOUND — Records exist but no matches yet. Browse lanes and use the Workbench to connect the dots.',
+  DEMO:         '🟡 DEMO MODE — Showing seed/demo data. Real data will replace this when scrapers run.',
+  STALE:        '🔴 STALE — Matches exist without source records. Run export_json.py --clear-stale to fix.',
+  MATCHED:      '🟢 LIVE — Live data with confirmed matches.',
+  MANUAL:       '🔵 MANUAL — Manual records loaded. Add more via Add Item or paste sources.',
+  MIXED:        '🟣 MIXED — Multiple data sources active.',
+};
+function renderBanner() {
+  const b = document.getElementById('mode-banner');
+  const mode = D.data_mode || 'EMPTY';
+  b.className = mode;
+  b.style.display = 'block';
+  document.getElementById('mode-banner-text').textContent = MODE_MSGS[mode] || mode;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KPIs
+// ═══════════════════════════════════════════════════════════════
+function renderKPIs() {
+  const k = D.kpi || {};
+  const profit = fmt$(k.total_profit_est || 0);
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-value">${k.total_signals || D.all_signals?.length || 0}</div>
+      <div class="kpi-label">Total Signals</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value amber">${k.unmatched_signals || D.unmatched_signals?.length || 0}</div>
+      <div class="kpi-label">Unmatched</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value teal">${k.total_matches || D.matched_deals?.length || 0}</div>
+      <div class="kpi-label">Matched Deals</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value blue">${k.assembly_count || D.assembly_opps?.length || 0}</div>
+      <div class="kpi-label">Assembly Opps</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value purple">${k.total_buyers || D.buyer_leads?.length || 0}</div>
+      <div class="kpi-label">Buyer Leads</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-value">${profit}</div>
+      <div class="kpi-label">Est Profit</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Lane summary cards on dashboard
+// ═══════════════════════════════════════════════════════════════
+const LANES = [
+  {key:'supply',    panel:'supply',    label:'Supply',           icon:'📦'},
+  {key:'demand',    panel:'demand',    label:'Demand / ISO',     icon:'📣'},
+  {key:'operator',  panel:'operators', label:'Operators',        icon:'🔧'},
+  {key:'infrastructure',panel:'infra', label:'Infrastructure',   icon:'🏗'},
+  {key:'business_for_sale',panel:'biz',label:'Business For Sale',icon:'🏢'},
+  {key:'event',     panel:'events',    label:'Events / Sales',   icon:'🏠'},
+  {key:'lead',      panel:'leads',     label:'Leads',            icon:'👤'},
+];
+function renderLaneSummary() {
+  const html = LANES.map(l => {
+    const items = D[l.key + '_items'] || [];
+    const unmatched = items.filter(s => s.match_status !== 'matched' && s.match_status !== 'manual_match').length;
+    return `<div class="lane-card" onclick="showPanel('${l.panel}', document.querySelector('[data-panel=${l.panel}]'))">
+      <div class="lane-card-count">${items.length}</div>
+      <div class="lane-card-label">${l.icon} ${l.label}</div>
+      <div class="lane-card-sub">${unmatched} unmatched</div>
+    </div>`;
+  }).join('');
+  document.getElementById('lane-summary-grid').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Update sidebar counts
+// ═══════════════════════════════════════════════════════════════
+function updateCounts() {
+  const mm = getManualMatches();
+  set('cnt-signals',   D.all_signals?.length || 0);
+  set('cnt-supply',    D.supply_items?.length || 0);
+  set('cnt-demand',    D.demand_items?.length || 0);
+  set('cnt-operators', D.operator_items?.length || 0);
+  set('cnt-infra',     D.infrastructure_items?.length || 0);
+  set('cnt-biz',       D.business_for_sale_items?.length || 0);
+  set('cnt-events',    D.event_items?.length || 0);
+  set('cnt-leads',     D.lead_items?.length || 0);
+  set('cnt-matches',   D.matched_deals?.length || 0);
+  set('cnt-assembly',  D.assembly_opps?.length || 0);
+  set('cnt-workbench', mm.length);
+  function set(id, v) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Dashboard quick lists
+// ═══════════════════════════════════════════════════════════════
+function renderDashMatches() {
+  const items = (D.matched_deals || []).slice(0, 5);
+  document.getElementById('dash-matches').innerHTML = items.length
+    ? items.map(d => matchCard(d)).join('')
+    : '<div class="empty"><strong>No matches yet</strong>Signals found — use the Workbench to create matches.</div>';
+}
+function renderDashUnmatched() {
+  const items = (D.unmatched_signals || []).slice(0, 5);
+  document.getElementById('dash-unmatched').innerHTML = items.length
+    ? items.map(s => signalCard(s)).join('')
+    : '<div class="empty">No unmatched signals.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// All Signals panel
+// ═══════════════════════════════════════════════════════════════
+function toggleSigFilter(type, btn) {
+  if (type === 'url')   sigFilterUrl   = !sigFilterUrl;
+  if (type === 'phone') sigFilterPhone = !sigFilterPhone;
+  btn.classList.toggle('active');
+  renderSignals();
+}
+
+function renderSignals() {
+  const q      = (document.getElementById('sig-search')?.value || '').toLowerCase();
+  const fType  = document.getElementById('sig-type')?.value || '';
+  const fOrig  = document.getElementById('sig-origin')?.value || '';
+  const fMatch = document.getElementById('sig-match')?.value || '';
+  const fSort  = document.getElementById('sig-sort')?.value || 'newest';
+
+  let rows = [...(D.all_signals || [])];
+
+  if (q) rows = rows.filter(s =>
+    [s.title, s.description, s.location, s.source, ...(s.keywords||[])].join(' ').toLowerCase().includes(q));
+  if (fType)  rows = rows.filter(s => s.normalized_signal_type === fType);
+  if (fOrig)  rows = rows.filter(s => s.data_origin === fOrig);
+  if (fMatch) rows = rows.filter(s => s.match_status === fMatch);
+  if (sigFilterUrl)   rows = rows.filter(s => s.url_live);
+  if (sigFilterPhone) rows = rows.filter(s => s.phone);
+
+  rows = sortSignals(rows, fSort);
+
+  const bar = document.getElementById('sig-count-bar');
+  if (bar) bar.textContent = `Showing ${rows.length} of ${D.all_signals?.length || 0} signals`;
+
+  document.getElementById('signals-list').innerHTML = rows.length
+    ? rows.map(s => signalCard(s)).join('')
+    : '<div class="empty"><strong>No signals match filters</strong>Try adjusting the filters above.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Lane panels
+// ═══════════════════════════════════════════════════════════════
+const LANE_CFG = {
+  supply:    {dataKey:'supply_items',    listId:'supply-list',    searchId:'supply-search',    sortId:'supply-sort'},
+  demand:    {dataKey:'demand_items',    listId:'demand-list',    searchId:'demand-search',    sortId:null},
+  operators: {dataKey:'operator_items',  listId:'operators-list', searchId:'operators-search', sortId:null},
+  infra:     {dataKey:'infrastructure_items',listId:'infra-list', searchId:'infra-search',     sortId:null},
+  biz:       {dataKey:'business_for_sale_items',listId:'biz-list',searchId:'biz-search',       sortId:null},
+  events:    {dataKey:'event_items',     listId:'events-list',    searchId:'events-search',    sortId:null},
+  leads:     {dataKey:'lead_items',      listId:'leads-list',     searchId:'leads-search',     sortId:null},
+};
+
+function renderLane(lane) {
+  const cfg = LANE_CFG[lane];
+  if (!cfg) return;
+  const q    = (document.getElementById(cfg.searchId)?.value || '').toLowerCase();
+  const sort = document.getElementById(cfg.sortId)?.value || 'newest';
+  let rows   = [...(D[cfg.dataKey] || [])];
+  if (q) rows = rows.filter(s =>
+    [s.title, s.description, s.location, s.source, ...(s.keywords||[])].join(' ').toLowerCase().includes(q));
+  rows = sortSignals(rows, sort);
+  const el = document.getElementById(cfg.listId);
+  if (!el) return;
+  el.innerHTML = rows.length
+    ? rows.map(s => signalCard(s)).join('')
+    : `<div class="empty"><strong>No ${lane} signals yet</strong>Add items manually or run the scanner for this source type.</div>`;
+}
+
+function sortSignals(rows, sort) {
+  if (sort === 'oldest')     return [...rows].sort((a,b) => (a.scraped_at||'').localeCompare(b.scraped_at||''));
+  if (sort === 'price_low')  return [...rows].sort((a,b) => (a.price_est||Infinity) - (b.price_est||Infinity));
+  if (sort === 'price_high') return [...rows].sort((a,b) => (b.price_est||0) - (a.price_est||0));
+  // newest (default)
+  return [...rows].sort((a,b) => (b.scraped_at||'').localeCompare(a.scraped_at||''));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Matched deals
+// ═══════════════════════════════════════════════════════════════
+function renderMatches() {
+  const q    = (document.getElementById('matches-search')?.value || '').toLowerCase();
+  const sort = document.getElementById('matches-sort')?.value || 'score';
+
+  // DB matches + localStorage manual matches
+  let rows = [...(D.matched_deals || [])];
+  const mm = getManualMatches();
+  // Render manual matches as lightweight deal cards
+  const manualRows = mm.map(m => ({
+    match_id: m.id, score: 0, is_manual: true, is_seed: false,
+    supply_title: m.source_title, supply_source: 'manual',
+    supply_url: m.source_url || '', supply_url_live: !!m.source_url,
+    buy_price: null, sell_est: null, spread: null, profit_est: null,
+    buyer_name: m.target_title, match_reason: 'Manual match',
+    next_action: m.notes || 'Review and confirm.',
+    matched_at: m.created_at?.slice(0,10) || '',
+    confidence: 0, matched_keywords: [],
+  }));
+  rows = [...rows, ...manualRows];
+
+  if (q) rows = rows.filter(r =>
+    [r.supply_title, r.buyer_name, r.supply_source, r.match_reason].join(' ').toLowerCase().includes(q));
+
+  if (sort === 'profit') rows = rows.sort((a,b) => (b.profit_est||0) - (a.profit_est||0));
+  else if (sort === 'spread') rows = rows.sort((a,b) => (b.spread||0) - (a.spread||0));
+  else rows = rows.sort((a,b) => (b.score||0) - (a.score||0));
+
+  document.getElementById('matches-list').innerHTML = rows.length
+    ? rows.map(d => matchCard(d)).join('')
+    : '<div class="empty"><strong>No matched deals yet</strong>Signals found but no matches. Use the Workbench to manually connect signals.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Assembly
+// ═══════════════════════════════════════════════════════════════
+function renderAssembly() {
+  const rows = D.assembly_opps || [];
+  document.getElementById('assembly-list').innerHTML = rows.length
+    ? rows.map(a => `
+      <div class="sig-card" onclick="openAssemblyDrawer(${JSON.stringify(a).replace(/"/g,'&quot;')})">
+        <div class="card-top">
+          <div class="card-title">${esc(a.title)}</div>
+          <span class="score-badge score-hi">${a.confidence}%</span>
+        </div>
+        <div class="card-meta">
+          <span class="tag">${a.listing_ids?.length || 0} items</span>
+          ${a.is_seed ? '<span class="tag seed">DEMO</span>' : ''}
+        </div>
+        <div class="card-numbers">
+          ${a.total_buy != null ? `<span class="num-buy">Buy: ${fmt$(a.total_buy)}</span>` : ''}
+          ${a.profit_est != null ? `<span class="num-profit">Profit: ${fmt$(a.profit_est)}</span>` : ''}
+        </div>
+        ${a.next_action ? `<div style="font-size:11px;color:var(--teal);margin-top:5px">→ ${esc(a.next_action)}</div>` : ''}
+      </div>`).join('')
+    : '<div class="empty"><strong>No assembly opportunities yet</strong>Assembly opps are generated when multiple related supply items are detected.</div>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Workbench (manual matches list)
+// ═══════════════════════════════════════════════════════════════
+function renderWorkbench() {
+  const mm = getManualMatches();
+  updateCounts();
+  if (!mm.length) {
+    document.getElementById('workbench-list').innerHTML =
+      '<div class="empty">No manual matches yet. Open any signal card and click <strong>+ Manual Match</strong> to start linking signals.</div>';
+    return;
+  }
+  document.getElementById('workbench-list').innerHTML = mm.map(m => `
+    <div class="sig-card">
+      <div class="card-top">
+        <div class="card-title">🔗 ${esc(m.source_title)} → ${esc(m.target_title)}</div>
+        <span class="score-badge score-low">Manual</span>
+      </div>
+      <div class="card-meta">
+        <span class="tag manual">manual_match</span>
+        <span class="tag">${m.created_at?.slice(0,10) || ''}</span>
+      </div>
+      ${m.notes ? `<div style="font-size:12px;color:var(--muted);margin-top:5px">${esc(m.notes)}</div>` : ''}
+      <div style="margin-top:8px">
+        <button class="drawer-action-btn" style="border-color:var(--red);color:var(--red);font-size:11px" onclick="deleteManualMatch('${m.id}')">✕ Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Config / Sources
+// ═══════════════════════════════════════════════════════════════
+function renderConfig() {
+  const rows = D.sources_config || [];
+  document.getElementById('config-tbody').innerHTML = rows.length
+    ? rows.map(s => `<tr>
+        <td><span class="enabled-dot ${s.enabled ? 'on' : 'off'}"></span></td>
+        <td>${esc(s.source_name)}</td>
+        <td><span style="font-size:11px;color:var(--muted)">${esc(s.source_type||'')}</span></td>
+        <td><span class="tag ${s.signal_type||''}" style="font-size:11px">${esc(s.signal_type||'')}</span></td>
+        <td style="font-size:11px;color:var(--muted)">${esc(s.market||'')} ${s.zip ? '('+s.zip+')' : ''}</td>
+        <td><span style="font-size:11px;color:${s.scraper_status==='live'?'var(--green)':s.scraper_status==='manual'?'var(--blue)':'var(--muted)'}">${esc(s.scraper_status||'')}</span></td>
+      </tr>`).join('')
+    : '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No sources config loaded</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Feed health
+// ═══════════════════════════════════════════════════════════════
+function renderFeeds() {
+  const rows = D.feed_summary || [];
+  document.getElementById('feeds-tbody').innerHTML = rows.length
+    ? rows.map(r => {
+        const dot = r.status === 'matched' ? 'ok' : 'warn';
+        const scraped = r.last_scraped ? r.last_scraped.slice(0,16).replace('T',' ') + ' UTC' : '—';
+        return `<tr>
+          <td><span class="feed-dot ${dot}"></span>${esc(r.source)}</td>
+          <td>${r.status}</td><td>${r.count}</td><td>${scraped}</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px">No feed data yet</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// P&L
+// ═══════════════════════════════════════════════════════════════
+function renderPL() {
+  const rows = D.pl_summary || [];
+  let totalBuy = 0, totalProfit = 0, totalDeals = 0;
+  document.getElementById('pl-tbody').innerHTML = rows.length
+    ? rows.map(r => {
+        totalBuy    += r.total_buy || 0;
+        totalProfit += r.total_profit_est || 0;
+        totalDeals  += r.deal_count || 0;
+        return `<tr>
+          <td>${esc(r.source)}</td><td>${r.status}</td><td>${r.deal_count}</td>
+          <td>${r.avg_score}</td>
+          <td>$${(r.total_buy||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+          <td style="color:var(--green)">$${(r.total_profit_est||0).toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+          <td style="color:var(--amber)">${r.avg_margin_pct||0}%</td>
+        </tr>`;
+      }).join('')
+    : '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No matched deal data yet</td></tr>';
+  document.getElementById('pl-totals').innerHTML = `
+    <div class="kpi-card"><div class="kpi-value blue">${totalDeals}</div><div class="kpi-label">Total Deals</div></div>
+    <div class="kpi-card"><div class="kpi-value amber">${fmt$(totalBuy)}</div><div class="kpi-label">Total Buy</div></div>
+    <div class="kpi-card"><div class="kpi-value teal">${fmt$(totalProfit)}</div><div class="kpi-label">Est Profit</div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Card renderers
+// ═══════════════════════════════════════════════════════════════
+function signalCard(s) {
+  const sc = s.is_seed ? '' : '';
+  const typeTag = `<span class="tag ${s.normalized_signal_type||''}">${esc(s.normalized_signal_type||s.signal_type||'')}</span>`;
+  const originTag = `<span class="tag ${s.data_origin||''}">${esc(s.data_origin||'')}</span>`;
+  const matchTag = `<span class="tag ${s.match_status||''}">${s.match_status==='matched'?'✓ matched':'unmatched'}</span>`;
+  const price = s.price_est != null ? fmt$(s.price_est) : (s.price_raw ? esc(s.price_raw) : '');
+  return `<div class="sig-card" onclick='openSignalDrawer(${JSON.stringify(s)})'>
+    <div class="card-top">
+      <div class="card-title">${esc(s.title||'(no title)')}</div>
+      ${s.is_seed ? '<span class="tag seed" style="flex:none">DEMO</span>' : ''}
+    </div>
+    <div class="card-meta">
+      ${typeTag}${originTag}${matchTag}
+      ${s.location ? `<span class="tag">${esc(s.location)}</span>` : ''}
+      ${s.category ? `<span class="tag">${esc(s.category)}</span>` : ''}
+      ${s.scraped_at ? `<span class="tag">${s.scraped_at}</span>` : ''}
+    </div>
+    ${price ? `<div class="card-numbers"><span class="num-buy">${price}</span></div>` : ''}
+    ${s.url_live
+      ? `<a class="card-link" href="${esc(s.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open listing ↗</a>`
+      : (s.url === '' && !s.is_manual ? '<div class="no-url">No source URL captured</div>' : '')}
+  </div>`;
+}
+
+function matchCard(d) {
+  const scoreClass = (d.score||0) >= 80 ? 'score-hi' : (d.score||0) >= 60 ? 'score-mid' : 'score-low';
+  const spread = d.spread != null ? `<span class="num-spread">Spread: ${fmt$(d.spread)}</span>` : '';
+  return `<div class="sig-card" onclick='openMatchDrawer(${JSON.stringify(d)})'>
+    <div class="card-top">
+      <div class="card-title">${esc(d.supply_title||'(no title)')}</div>
+      <span class="score-badge ${scoreClass}">${d.is_manual ? 'Manual' : (d.score||0)}</span>
+    </div>
+    <div class="card-meta">
+      <span class="tag ${d.is_seed?'seed':d.is_manual?'manual':'live'}">${d.is_seed?'DEMO':d.is_manual?'Manual':'Live'}</span>
+      ${d.supply_source ? `<span class="tag">${esc(d.supply_source)}</span>` : ''}
+      ${d.supply_location ? `<span class="tag">${esc(d.supply_location)}</span>` : ''}
+      ${d.matched_at ? `<span class="tag">${d.matched_at}</span>` : ''}
+    </div>
+    <div class="card-numbers">
+      ${d.buy_price != null ? `<span class="num-buy">Buy: ${fmt$(d.buy_price)}</span>` : ''}
+      ${d.profit_est != null ? `<span class="num-profit">Profit: ${fmt$(d.profit_est)}</span>` : ''}
+      ${spread}
+    </div>
+    ${d.buyer_name ? `<div style="font-size:11px;color:var(--teal);margin-top:4px">→ ${esc(d.buyer_name)}</div>` : ''}
+    ${d.supply_url_live
+      ? `<a class="card-link" href="${esc(d.supply_url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Open listing ↗</a>`
+      : (!d.is_manual ? '<div class="no-url">No source URL captured</div>' : '')}
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Drawers
+// ═══════════════════════════════════════════════════════════════
+function openSignalDrawer(s) {
+  document.getElementById('drawer-title').textContent = 'Signal Detail';
+  const kws = (s.keywords||[]).join(', ');
+  const candidates = findCandidates(s);
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Identity</div>
+      <div class="drawer-field"><div class="drawer-field-label">Title</div><div class="drawer-field-value">${esc(s.title||'')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Signal Type</div><div class="drawer-field-value"><span class="tag ${s.normalized_signal_type||''}">${esc(s.signal_type||'')}</span></div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Data Origin</div><div class="drawer-field-value"><span class="tag ${s.data_origin||''}">${esc(s.data_origin||'')}</span></div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Match Status</div><div class="drawer-field-value"><span class="tag ${s.match_status||''}">${esc(s.match_status||'')}</span></div></div>
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Source</div>
+      <div class="drawer-field"><div class="drawer-field-label">Source</div><div class="drawer-field-value">${esc(s.source||'')} ${s.source_site ? '('+esc(s.source_site)+')' : ''}</div></div>
+      ${s.url_live
+        ? `<a class="drawer-action-btn btn-open" href="${esc(s.url)}" target="_blank" rel="noopener">↗ Open Listing</a>`
+        : '<div class="no-url" style="margin-bottom:6px">No source URL captured</div>'}
+      ${s.phone ? `<div class="drawer-field"><div class="drawer-field-label">Phone</div><div class="drawer-field-value"><a href="tel:${esc(s.phone)}" style="color:var(--blue)">${esc(s.phone)}</a></div></div>` : ''}
+      ${s.website ? `<div class="drawer-field"><div class="drawer-field-label">Website</div><div class="drawer-field-value"><a href="${esc(s.website)}" target="_blank" style="color:var(--blue)" rel="noopener">${esc(s.website)}</a></div></div>` : ''}
+      ${s.email ? `<div class="drawer-field"><div class="drawer-field-label">Email</div><div class="drawer-field-value">${esc(s.email)}</div></div>` : ''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Details</div>
+      <div class="drawer-field"><div class="drawer-field-label">Location</div><div class="drawer-field-value">${esc(s.location||'—')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Category</div><div class="drawer-field-value">${esc(s.category||'—')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Price</div><div class="drawer-field-value">${s.price_est != null ? fmt$(s.price_est) : esc(s.price_raw||'—')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Date Found</div><div class="drawer-field-value">${esc(s.scraped_at||'—')}</div></div>
+      ${kws ? `<div class="drawer-field"><div class="drawer-field-label">Keywords</div><div class="drawer-field-value">${esc(kws)}</div></div>` : ''}
+      ${s.description ? `<div class="drawer-field"><div class="drawer-field-label">Description</div><div class="drawer-field-value description">${esc(s.description)}</div></div>` : ''}
+      ${s.notes ? `<div class="drawer-field"><div class="drawer-field-label">Notes</div><div class="drawer-field-value">${esc(s.notes)}</div></div>` : ''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Actions</div>
+      <button class="drawer-action-btn btn-match" onclick='startManualMatch(${JSON.stringify(s)})'>+ Manual Match</button>
+    </div>
+    ${candidates.length ? `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Match Candidates (${candidates.length})</div>
+      ${candidates.slice(0,8).map(c => `
+        <div class="candidate-item" onclick='startManualMatch(${JSON.stringify(s)},${JSON.stringify(c)})'>
+          <div class="candidate-title">${esc(c.title||'')}</div>
+          <div class="candidate-meta">
+            <span class="tag ${c.normalized_signal_type||''}" style="margin-right:4px">${esc(c.normalized_signal_type||'')}</span>
+            ${c.location ? esc(c.location) : ''}
+            ${c.price_est != null ? ' · ' + fmt$(c.price_est) : ''}
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+  `;
+  openDrawer();
+}
+
+function openMatchDrawer(d) {
+  document.getElementById('drawer-title').textContent = 'Match Detail';
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Supply Item</div>
+      <div class="drawer-field"><div class="drawer-field-label">Title</div><div class="drawer-field-value">${esc(d.supply_title||'')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Source</div><div class="drawer-field-value">${esc(d.supply_source||'')} ${d.supply_source_site ? '('+esc(d.supply_source_site)+')' : ''}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Location</div><div class="drawer-field-value">${esc(d.supply_location||'—')}</div></div>
+      ${d.supply_url_live
+        ? `<a class="drawer-action-btn btn-open" href="${esc(d.supply_url)}" target="_blank" rel="noopener">↗ Open Listing</a>`
+        : '<div class="no-url" style="margin-bottom:6px">No source URL captured</div>'}
+      ${d.supply_description ? `<div class="drawer-field"><div class="drawer-field-label">Description</div><div class="drawer-field-value description">${esc(d.supply_description)}</div></div>` : ''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Match Analysis</div>
+      <div class="drawer-field"><div class="drawer-field-label">Score</div><div class="drawer-field-value">${d.score||'Manual'}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Confidence</div><div class="drawer-field-value">${d.confidence||0}%</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Buyer / Target</div><div class="drawer-field-value">${esc(d.buyer_name||'—')}</div></div>
+      ${d.match_reason ? `<div class="drawer-field"><div class="drawer-field-label">Match Reason</div><div class="drawer-field-value">${esc(d.match_reason)}</div></div>` : ''}
+      ${(d.matched_keywords||[]).length ? `<div class="drawer-field"><div class="drawer-field-label">Matched Keywords</div><div class="drawer-field-value">${esc(d.matched_keywords.join(', '))}</div></div>` : ''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Financials</div>
+      <div class="card-numbers" style="gap:16px;font-size:13px">
+        ${d.buy_price != null ? `<span class="num-buy">Buy: ${fmt$(d.buy_price)}</span>` : ''}
+        ${d.sell_est  != null ? `<span class="num-profit">Sell Est: ${fmt$(d.sell_est)}</span>` : ''}
+        ${d.spread    != null ? `<span class="num-spread">Spread: ${fmt$(d.spread)}</span>` : ''}
+        ${d.profit_est!= null ? `<span class="num-profit">Profit: ${fmt$(d.profit_est)}</span>` : ''}
+        ${d.margin_pct!= null ? `<span style="color:var(--amber)">Margin: ${d.margin_pct}%</span>` : ''}
+      </div>
+    </div>
+    ${d.next_action ? `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Next Action</div>
+      <div style="font-size:13px;color:var(--teal)">${esc(d.next_action)}</div>
+    </div>` : ''}
+  `;
+  openDrawer();
+}
+
+function openAssemblyDrawer(a) {
+  document.getElementById('drawer-title').textContent = 'Assembly Opportunity';
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Overview</div>
+      <div class="drawer-field"><div class="drawer-field-label">Title</div><div class="drawer-field-value">${esc(a.title||'')}</div></div>
+      <div class="drawer-field"><div class="drawer-field-label">Confidence</div><div class="drawer-field-value">${a.confidence||0}%</div></div>
+      ${a.description ? `<div class="drawer-field"><div class="drawer-field-label">Description</div><div class="drawer-field-value description">${esc(a.description)}</div></div>` : ''}
+    </div>
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Financials</div>
+      <div class="card-numbers" style="gap:16px;font-size:13px">
+        ${a.total_buy   != null ? `<span class="num-buy">Total Buy: ${fmt$(a.total_buy)}</span>` : ''}
+        ${a.revenue_est != null ? `<span class="num-profit">Revenue Est: ${fmt$(a.revenue_est)}</span>` : ''}
+        ${a.profit_est  != null ? `<span class="num-profit">Profit: ${fmt$(a.profit_est)}</span>` : ''}
+      </div>
+    </div>
+    ${a.next_action ? `
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Next Action</div>
+      <div style="font-size:13px;color:var(--teal)">${esc(a.next_action)}</div>
+    </div>` : ''}
+    <div class="drawer-section">
+      <div class="drawer-section-hd">Component Items (${(a.listing_ids||[]).length})</div>
+      ${(a.categories||[]).map(c => `<div class="candidate-item"><div class="candidate-title">${esc(c)}</div></div>`).join('') || '<div style="color:var(--muted);font-size:12px">No component details</div>'}
+    </div>
+  `;
+  openDrawer();
+}
+
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Match candidates (keyword overlap)
+// ═══════════════════════════════════════════════════════════════
+function findCandidates(s) {
+  const all = D.all_signals || [];
+  const myType = s.normalized_signal_type;
+  const myKws  = new Set((s.keywords||[]).map(k => k.toLowerCase()));
+  const myText = (s.title + ' ' + s.description).toLowerCase();
+
+  // Don't suggest same-type unless supply ↔ supply for assembly
+  const others = all.filter(o => o.id !== s.id);
+
+  return others.map(o => {
+    let score = 0;
+    const oKws = (o.keywords||[]).map(k => k.toLowerCase());
+    // keyword overlap
+    oKws.forEach(k => { if (myKws.has(k) || myText.includes(k)) score += 10; });
+    // cross-type bonus
+    const crossPairs = [
+      ['supply','demand'],['demand','supply'],
+      ['supply','operator'],['operator','supply'],
+      ['demand','operator'],['operator','demand'],
+      ['supply','lead'],['demand','lead'],
+      ['business_for_sale','lead'],
+    ];
+    if (crossPairs.some(([a,b]) => a === myType && b === o.normalized_signal_type)) score += 15;
+    // location match
+    if (s.location && o.location && s.location.toLowerCase().includes(o.location.toLowerCase().split(',')[0])) score += 5;
+    return {...o, _cand_score: score};
+  })
+  .filter(o => o._cand_score > 0)
+  .sort((a,b) => b._cand_score - a._cand_score);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Manual matching
+// ═══════════════════════════════════════════════════════════════
+function startManualMatch(sigA, sigB) {
+  closeDrawer();
+  pendingMatchA = sigA;
+  pendingMatchB = sigB || null;
+  const panel = document.getElementById('match-pending');
+  document.getElementById('pending-a-label').textContent = '① ' + (sigA.title || sigA.id);
+  document.getElementById('pending-b-label').textContent = sigB
+    ? '② ' + (sigB.title || sigB.id)
+    : '② (select second signal from any lane)';
+  panel.style.display = 'block';
+  showPanel('workbench', document.querySelector('[data-panel=workbench]'));
+}
+
+function confirmManualMatch() {
+  if (!pendingMatchA) return;
+  const mm = getManualMatches();
+  const now = new Date().toISOString();
+  const match = {
+    id:           'mm_' + Date.now(),
+    source_id:    pendingMatchA.id,
+    source_title: pendingMatchA.title || pendingMatchA.id,
+    source_url:   pendingMatchA.url || '',
+    target_id:    pendingMatchB?.id || '',
+    target_title: pendingMatchB?.title || pendingMatchB?.id || '(unset)',
+    notes:        '',
+    created_at:   now,
+  };
+  mm.push(match);
+  saveManualMatches(mm);
+  clearPending();
+  // Refresh matched_deals view
+  mergeLocalSignals();
+  renderMatches();
+  renderWorkbench();
+  updateCounts();
+  alert('Manual match saved. View in Matched Deals and Workbench.');
+}
+
+function clearPending() {
+  pendingMatchA = null;
+  pendingMatchB = null;
+  document.getElementById('match-pending').style.display = 'none';
+}
+
+function deleteManualMatch(id) {
+  const mm = getManualMatches().filter(m => m.id !== id);
+  saveManualMatches(mm);
+  renderWorkbench();
+  renderMatches();
+  updateCounts();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Panel navigation
+// ═══════════════════════════════════════════════════════════════
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Utilities
+// ═══════════════════════════════════════════════════════════════
+function fmt$(v) {
+  if (v == null) return 'N/A';
+  if (v >= 1000) return '$' + (v/1000).toFixed(1) + 'k';
+  return '$' + Number(v).toLocaleString('en-US', {maximumFractionDigits:0});
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 loadData();
-renderRecentlyAdded();
 </script>
 </body>
 </html>
