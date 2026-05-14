@@ -348,55 +348,6 @@ def parse_settings(ws) -> dict:
     return settings
 
 
-def parse_sources(ws) -> list:
-    """
-    Reads the Sources tab from Google Sheets.
-    Expected columns (exact names):
-      enabled | source_name | source_type | signal_type | query | category |
-      market | zip | radius_miles | include_keywords | exclude_keywords | notes | scraper_status
-
-    Returns list of source dicts written to sources_config.json by _write_sources_config.
-    Falls back to sources_config.json on disk if sheet is empty.
-    """
-    rows = ws.get_all_records()
-    sources = []
-    for r in rows:
-        raw_enabled = str(r.get("enabled", "true")).strip().lower()
-        enabled = raw_enabled not in ("no", "false", "0", "")
-        try:
-            sources.append({
-                "enabled":          enabled,
-                "source_name":      str(r.get("source_name",  "")).strip(),
-                "source_type":      str(r.get("source_type",  "")).strip(),
-                "signal_type":      str(r.get("signal_type",  "supply")).strip(),
-                "query":            str(r.get("query",         "")).strip(),
-                "category":         str(r.get("category",      "")).strip(),
-                "market":           str(r.get("market",        "")).strip(),
-                "zip":              str(r.get("zip",           "")).strip(),
-                "radius_miles":     int(r.get("radius_miles",  50) or 50),
-                "include_keywords": str(r.get("include_keywords", "")).strip(),
-                "exclude_keywords": str(r.get("exclude_keywords", "")).strip(),
-                "notes":            str(r.get("notes",          "")).strip(),
-                "scraper_status":   str(r.get("scraper_status", "manual")).strip(),
-            })
-        except (ValueError, TypeError) as e:
-            log.warning(f"  Skipping malformed Sources row: {e}")
-            continue
-    if not sources:
-        log.warning("  Sources tab empty — checking sources_config.json on disk")
-        if Path("sources_config.json").exists():
-            try:
-                data = json.loads(Path("sources_config.json").read_text(encoding="utf-8"))
-                if isinstance(data, list) and data:
-                    log.info(f"  Loaded {len(data)} sources from sources_config.json")
-                    return data
-            except Exception:
-                pass
-        log.warning("  No sources found in Sheet or disk — export_json.py will use built-in defaults")
-        return []
-    return sources
-
-
 # ── Main fetch ─────────────────────────────────────────────────────────────────
 
 TAB_NAMES = {
@@ -406,7 +357,6 @@ TAB_NAMES = {
     "leadgen_profiles": "Leadgen Profiles",
     "scoring":          "Scoring",
     "settings":         "Settings",
-    "sources_config":   "Sources",        # NEW: drives sources_config.json + dashboard lanes
 }
 
 PARSERS = {
@@ -416,7 +366,6 @@ PARSERS = {
     "leadgen_profiles": parse_leadgen_profiles,
     "scoring":          parse_scoring,
     "settings":         parse_settings,
-    "sources_config":   parse_sources,    # NEW
 }
 
 
@@ -430,31 +379,182 @@ def fetch_config_from_sheets() -> dict:
             log.info(f"  ✓ {tab_name}")
         except Exception as e:
             log.warning(f"  ✗ {tab_name}: {e} — using defaults")
-            # sources_config has no DEFAULTS entry — fall back to empty list
-            config[key] = DEFAULTS.get(key, [])
+            config[key] = DEFAULTS[key]
     config["_fetched_at"] = datetime.now(timezone.utc).isoformat()
     config["_source"]     = "google_sheets"
-
-    # Write sources_config.json from Sheet data so export_json.py picks it up
-    _write_sources_config(config.get("sources_config") or [])
     return config
 
 
 SOURCES_CFG_PATH = Path("sources_config.json")
 
+DEFAULT_SOURCES = [
+    {"enabled": True,  "source_name": "Craigslist For Sale — Equipment",      "source_type": "craigslist_for_sale",      "signal_type": "supply",           "query": "pressure washer OR pallet racking OR restaurant equipment", "category": "equipment",           "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "commercial,equipment,tools,restaurant,pallet,rack", "exclude_keywords": "toy,junk,broken", "notes": "General supply feed",           "scraper_status": "live"},
+    {"enabled": True,  "source_name": "Craigslist Wanted — ISO / Services",   "source_type": "craigslist_wanted",        "signal_type": "demand",           "query": "ISO pressure washing OR wanted driveway cleaning",          "category": "service_demand",      "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "ISO,wanted,need,looking for",                      "exclude_keywords": "spam",           "notes": "Demand / ISO feed",             "scraper_status": "live"},
+    {"enabled": True,  "source_name": "Craigslist Services — Operators",      "source_type": "craigslist_services",      "signal_type": "operator",         "query": "pressure washing OR junk removal OR hauling",               "category": "service_provider",    "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "pressure washing,junk removal,hauling",            "exclude_keywords": "franchise",      "notes": "Operator / capability feed",    "scraper_status": "live"},
+    {"enabled": True,  "source_name": "GovDeals — Surplus Equipment",         "source_type": "govdeals",                 "signal_type": "supply",           "query": "equipment tools vehicles",                                  "category": "government_surplus",  "market": "Regional",   "zip": "45219", "radius_miles": 200, "include_keywords": "equipment,vehicle,fleet,tools,industrial",         "exclude_keywords": "parts only",     "notes": "Government surplus auctions",   "scraper_status": "live"},
+    {"enabled": True,  "source_name": "PublicSurplus — Auctions",             "source_type": "publicsurplus",            "signal_type": "supply",           "query": "equipment fleet tools",                                     "category": "government_surplus",  "market": "Regional",   "zip": "45219", "radius_miles": 200, "include_keywords": "equipment,vehicle,fleet,tools",                    "exclude_keywords": "parts only",     "notes": "Public surplus auctions",       "scraper_status": "live"},
+    {"enabled": True,  "source_name": "Facebook Marketplace — Manual Import", "source_type": "facebook_manual",          "signal_type": "supply",           "query": "manual paste",                                              "category": "manual_supply",       "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "equipment,tools,business",                        "exclude_keywords": "",               "notes": "Manual import",                 "scraper_status": "manual"},
+    {"enabled": True,  "source_name": "Garage / Estate Sale — Manual",        "source_type": "garage_sale_manual",       "signal_type": "garage_sale",      "query": "manual paste",                                              "category": "local_event",         "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "garage sale,estate sale,tools",                   "exclude_keywords": "",               "notes": "Manual local sale import",      "scraper_status": "manual"},
+    {"enabled": True,  "source_name": "Business For Sale — Manual",           "source_type": "business_for_sale_manual", "signal_type": "business_for_sale","query": "manual paste",                                              "category": "business_acquisition","market": "Cincinnati", "zip": "45219", "radius_miles": 100, "include_keywords": "business for sale,established,cash flow",          "exclude_keywords": "",               "notes": "Manual business-for-sale",      "scraper_status": "manual"},
+    {"enabled": False, "source_name": "OSM Local Business Leads",             "source_type": "osm_leadgen",              "signal_type": "lead",             "query": "used equipment reseller",                                   "category": "buyer_lead",          "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "reseller,recycler",                               "exclude_keywords": "",               "notes": "Leadgen from OpenStreetMap",    "scraper_status": "not_implemented"},
+    {"enabled": False, "source_name": "Nextdoor — Manual",                    "source_type": "nextdoor_manual",          "signal_type": "demand",           "query": "manual paste",                                              "category": "community_demand",    "market": "Cincinnati", "zip": "45219", "radius_miles": 25,  "include_keywords": "looking for,need,ISO",                            "exclude_keywords": "",               "notes": "Paste Nextdoor posts",          "scraper_status": "manual"},
+    {"enabled": False, "source_name": "BizBuySell — Scrape",                  "source_type": "bizbuysell",               "signal_type": "business_for_sale","query": "Cincinnati OR Ohio",                                        "category": "business_acquisition","market": "Cincinnati", "zip": "45219", "radius_miles": 100, "include_keywords": "equipment,route,cash flow",                       "exclude_keywords": "",               "notes": "Future scraper target",         "scraper_status": "not_implemented"},
+    {"enabled": False, "source_name": "RSS Feed — Generic",                   "source_type": "rss",                      "signal_type": "supply",           "query": "",                                                          "category": "rss_feed",            "market": "Cincinnati", "zip": "45219", "radius_miles": 50,  "include_keywords": "",                                                "exclude_keywords": "",               "notes": "Generic RSS feed",              "scraper_status": "not_implemented"},
+]
+
+SIGNAL_TYPE_NORM = {
+    "supply": "supply", "demand": "demand", "operator": "operator",
+    "infrastructure": "infrastructure", "business_for_sale": "business_for_sale",
+    "garage_sale": "event", "estate_sale": "event", "event": "event",
+    "lead": "lead", "local_business": "lead",
+}
+
+
+def parse_sources(ws) -> list:
+    """Read Sources tab → list of source config dicts. Falls back to DEFAULT_SOURCES."""
+    rows = ws.get_all_records()
+    sources = []
+    for r in rows:
+        raw = str(r.get("enabled", "true")).strip().lower()
+        enabled = raw not in ("no", "false", "0", "")
+        try:
+            sources.append({
+                "enabled":          enabled,
+                "source_name":      str(r.get("source_name",  "") or "").strip(),
+                "source_type":      str(r.get("source_type",  "") or "").strip(),
+                "signal_type":      str(r.get("signal_type",  "supply") or "supply").strip(),
+                "query":            str(r.get("query",         "") or "").strip(),
+                "category":         str(r.get("category",      "") or "").strip(),
+                "market":           str(r.get("market",        "") or "").strip(),
+                "zip":              str(r.get("zip",           "") or "").strip(),
+                "radius_miles":     int(r.get("radius_miles",  50) or 50),
+                "include_keywords": str(r.get("include_keywords", "") or "").strip(),
+                "exclude_keywords": str(r.get("exclude_keywords", "") or "").strip(),
+                "notes":            str(r.get("notes",          "") or "").strip(),
+                "scraper_status":   str(r.get("scraper_status", "manual") or "manual").strip(),
+            })
+        except (ValueError, TypeError) as e:
+            log.warning(f"  Skipping malformed Sources row: {e}")
+    if not sources:
+        log.warning("  Sources tab empty — using DEFAULT_SOURCES")
+        return list(DEFAULT_SOURCES)
+    return sources
+
+
+def parse_manual_signals(ws) -> list:
+    """
+    Read Manual Signals tab → list of signal dicts ready for export_json.py.
+    Columns: enabled, signal_type, source_name, source_type, title, description,
+             location, price, url, phone, website, email, category, keywords,
+             notes, status, created_at
+    Only rows with enabled=true (or yes/1) and non-empty title are returned.
+    """
+    rows = ws.get_all_records()
+    signals = []
+    for i, r in enumerate(rows):
+        raw_enabled = str(r.get("enabled", "true")).strip().lower()
+        if raw_enabled in ("no", "false", "0", ""):
+            continue
+        title = str(r.get("title", "") or "").strip()
+        if not title:
+            continue
+        raw_st   = str(r.get("signal_type", "supply") or "supply").strip().lower()
+        price_raw = str(r.get("price", "") or "").strip()
+        try:
+            price_est = float(price_raw.replace("$", "").replace(",", "").split("-")[0].strip()) if price_raw else None
+        except ValueError:
+            price_est = None
+        kw_raw = str(r.get("keywords", "") or "").strip()
+        keywords = [k.strip() for k in kw_raw.split(",") if k.strip()] if kw_raw else []
+        url = str(r.get("url", "") or "").strip()
+        created = str(r.get("created_at", "") or "").strip() or datetime.now(timezone.utc).isoformat()[:10]
+        signals.append({
+            "id":                     f"sheet_manual_{i}_{created.replace('-','')}",
+            "title":                  title,
+            "description":            str(r.get("description", "") or "").strip(),
+            "signal_type":            raw_st,
+            "normalized_signal_type": SIGNAL_TYPE_NORM.get(raw_st, raw_st),
+            "source":                 str(r.get("source_name", "Manual Signals") or "Manual Signals").strip(),
+            "source_type":            str(r.get("source_type", "manual_paste") or "manual_paste").strip(),
+            "source_site":            "sheets.google.com",
+            "url":                    url if url.startswith("http") else "",
+            "url_live":               url.startswith("http"),
+            "price_raw":              price_raw,
+            "price_est":              price_est,
+            "location":               str(r.get("location", "") or "").strip(),
+            "category":               str(r.get("category", "") or "").strip(),
+            "phone":                  str(r.get("phone", "") or "").strip(),
+            "website":                str(r.get("website", "") or "").strip(),
+            "email":                  str(r.get("email", "") or "").strip(),
+            "keywords":               keywords,
+            "notes":                  str(r.get("notes", "") or "").strip(),
+            "status":                 str(r.get("status", "new") or "new").strip(),
+            "scraped_at":             created,
+            "match_status":           "unmatched",
+            "data_origin":            "manual",
+            "is_manual":              True,
+            "is_seed":                False,
+            "score":                  None,
+        })
+    log.info(f"  Manual Signals: {len(signals)} enabled rows loaded")
+    return signals
+
 
 def _write_sources_config(sources: list):
-    """Write sources_config.json so export_json.py and the dashboard pick up Sheet-driven sources."""
+    """Write sources_config.json — read by export_json.py and dashboard."""
     if not sources:
-        log.info("  sources_config: empty — sources_config.json not overwritten")
         return
     SOURCES_CFG_PATH.write_text(json.dumps(sources, indent=2), encoding="utf-8")
     log.info(f"  Wrote {len(sources)} sources to {SOURCES_CFG_PATH.resolve()}")
 
 
+# ── Tab names + parsers ───────────────────────────────────────────────────────
+
+TAB_NAMES = {
+    "search_criteria":  "Search Criteria",
+    "markets":          "Markets",
+    "buyer_profiles":   "Buyer Profiles",
+    "leadgen_profiles": "Leadgen Profiles",
+    "scoring":          "Scoring",
+    "settings":         "Settings",
+    "sources_config":   "Sources",
+    "manual_signals":   "Manual Signals",
+}
+
+PARSERS = {
+    "search_criteria":  parse_search_criteria,
+    "markets":          parse_markets,
+    "buyer_profiles":   parse_buyer_profiles,
+    "leadgen_profiles": parse_leadgen_profiles,
+    "scoring":          parse_scoring,
+    "settings":         parse_settings,
+    "sources_config":   parse_sources,
+    "manual_signals":   parse_manual_signals,
+}
+
+
+def fetch_config_from_sheets() -> dict:
+    spreadsheet = get_spreadsheet()
+    config = {}
+    for key, tab_name in TAB_NAMES.items():
+        try:
+            ws = spreadsheet.worksheet(tab_name)
+            config[key] = PARSERS[key](ws)
+            log.info(f"  ✓ {tab_name}")
+        except Exception as e:
+            log.warning(f"  ✗ {tab_name}: {e} — using defaults")
+            config[key] = DEFAULTS.get(key, [] if key in ("manual_signals", "sources_config") else {})
+    config["_fetched_at"] = datetime.now(timezone.utc).isoformat()
+    config["_source"]     = "google_sheets"
+    # Write sources_config.json so export_json.py picks it up
+    _write_sources_config(config.get("sources_config") or [])
+    return config
+
+
 def build_default_config() -> dict:
     config = dict(DEFAULTS)
-    config["sources_config"] = []   # export_json.py will use its own DEFAULT_SOURCES when empty
+    config["sources_config"]  = list(DEFAULT_SOURCES)
+    config["manual_signals"]  = []   # empty until Sheet has rows
     config["_fetched_at"] = datetime.now(timezone.utc).isoformat()
     config["_source"]     = "defaults"
     return config
@@ -486,6 +586,10 @@ TAB_HEADERS = {
     "Sources":          ["enabled", "source_name", "source_type", "signal_type", "query",
                          "category", "market", "zip", "radius_miles",
                          "include_keywords", "exclude_keywords", "notes", "scraper_status"],
+    "Manual Signals":   ["enabled", "signal_type", "source_name", "source_type",
+                         "title", "description", "location", "price", "url",
+                         "phone", "website", "email", "category", "keywords",
+                         "notes", "status", "created_at"],
 }
 
 def ensure_config_tabs(spreadsheet):
@@ -553,21 +657,25 @@ def seed_config_tabs(spreadsheet):
     spreadsheet.worksheet("Settings").update("A2", s_rows)
 
     # Sources — 12 default rows
-    src_defaults = [
-        ["true",  "Craigslist For Sale — Equipment",      "craigslist_for_sale",       "supply",           "pressure washer OR pallet racking OR restaurant equipment", "equipment",          "Cincinnati", "45219", 50,  "commercial,equipment,tools,restaurant,pallet,rack,pressure washer", "toy,junk,broken,parts only", "General supply feed",                  "live"],
-        ["true",  "Craigslist Wanted — ISO / Services",   "craigslist_wanted",         "demand",           "ISO pressure washing OR wanted driveway cleaning",           "service_demand",     "Cincinnati", "45219", 50,  "ISO,wanted,need,looking for,driveway,cleaning,junk removal",       "spam",                       "Demand-side / ISO feed",               "live"],
-        ["true",  "Craigslist Services — Operators",      "craigslist_services",       "operator",         "pressure washing OR junk removal OR hauling OR handyman",    "service_provider",   "Cincinnati", "45219", 50,  "pressure washing,junk removal,hauling,handyman,cheap,local",       "franchise,national",         "Operator / capability feed",           "live"],
-        ["true",  "GovDeals — Surplus Equipment",         "govdeals",                  "supply",           "equipment tools vehicles",                                   "government_surplus", "Regional",   "45219", 200, "equipment,vehicle,fleet,tools,industrial",                         "parts only",                 "Government surplus auctions",          "live"],
-        ["true",  "PublicSurplus — Auctions",             "publicsurplus",             "supply",           "equipment fleet tools",                                      "government_surplus", "Regional",   "45219", 200, "equipment,vehicle,fleet,tools",                                    "parts only",                 "Public surplus auctions",              "live"],
-        ["true",  "Facebook Marketplace — Manual Import", "facebook_manual",           "supply",           "manual paste",                                               "manual_supply",      "Cincinnati", "45219", 50,  "equipment,tools,business,garage sale,moving sale",                "",                           "Manual source for pasted Facebook posts","manual"],
-        ["true",  "Garage / Estate Sale — Manual",        "garage_sale_manual",        "garage_sale",      "manual paste",                                               "local_event",        "Cincinnati", "45219", 50,  "garage sale,moving sale,estate sale,tools,equipment",              "baby clothes",               "Manual / import source for local sales","manual"],
-        ["true",  "Business For Sale — Manual",           "business_for_sale_manual",  "business_for_sale","manual paste",                                               "business_acquisition","Cincinnati","45219", 100, "business for sale,established,route,equipment included,cash flow", "",                           "Manual import of business-for-sale listings","manual"],
-        ["false", "OSM Local Business Leads",             "osm_leadgen",               "lead",             "used equipment reseller OR electronics recycler",            "buyer_lead",         "Cincinnati", "45219", 50,  "reseller,recycler,equipment dealer,repair shop",                  "",                           "Buyer/demand leadgen from OpenStreetMap","not_implemented"],
-        ["false", "Nextdoor — Manual",                    "nextdoor_manual",           "demand",           "manual paste",                                               "community_demand",   "Cincinnati", "45219", 25,  "looking for,need,ISO,anyone know,recommend",                       "",                           "Paste Nextdoor posts manually",        "manual"],
-        ["false", "BizBuySell — Scrape",                  "bizbuysell",                "business_for_sale","Cincinnati OR Ohio",                                         "business_acquisition","Cincinnati","45219", 100, "equipment,route,cash flow,established",                            "",                           "Future scraper target",                "not_implemented"],
-        ["false", "RSS Feed — Generic",                   "rss",                       "supply",           "",                                                           "rss_feed",           "Cincinnati", "45219", 50,  "",                                                                 "",                           "Generic RSS feed import",              "not_implemented"],
+    src_rows = [
+        [str(s["enabled"]).lower(), s["source_name"], s["source_type"], s["signal_type"],
+         s["query"], s["category"], s["market"], s["zip"], s["radius_miles"],
+         s["include_keywords"], s["exclude_keywords"], s["notes"], s["scraper_status"]]
+        for s in DEFAULT_SOURCES
     ]
-    spreadsheet.worksheet("Sources").update("A2", src_defaults)
+    spreadsheet.worksheet("Sources").update("A2", src_rows)
+
+    # Manual Signals — empty with one example row so the format is clear
+    example_row = [
+        "true", "demand", "Facebook Manual", "facebook_manual",
+        "ISO pressure washing service Cincinnati",
+        "Looking for a reliable pressure washing company for my driveway and deck. Budget around $200.",
+        "Cincinnati OH 45219", "200", "", "513-555-0000", "", "",
+        "service_demand", "pressure washing,driveway,deck",
+        "Posted in Cincinnati Buy/Sell/Trade group", "new",
+        datetime.now(timezone.utc).isoformat()[:10],
+    ]
+    spreadsheet.worksheet("Manual Signals").update("A2", [example_row])
 
     log.info("Config tabs seeded with defaults.")
 
@@ -575,19 +683,20 @@ def seed_config_tabs(spreadsheet):
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 def _print_config_summary(config: dict):
-    """Print validation summary — called after every successful config write."""
-    bp    = config.get("buyer_profiles", [])
-    sc    = config.get("scoring", {})
-    mkts  = config.get("markets", [])
-    lp    = config.get("leadgen_profiles", [])
-    kws   = config.get("search_criteria", {}).get("keywords", [])
-    srcs  = config.get("sources_config", [])
+    bp   = config.get("buyer_profiles", [])
+    sc   = config.get("scoring", {})
+    mkts = config.get("markets", [])
+    lp   = config.get("leadgen_profiles", [])
+    kws  = config.get("search_criteria", {}).get("keywords", [])
+    srcs = config.get("sources_config", [])
+    man  = config.get("manual_signals", [])
     print(f"  buyer_profiles    : {len(bp)} profiles")
     print(f"  scoring keys      : {list(sc.keys())}")
     print(f"  markets           : {len(mkts)} entries")
     print(f"  leadgen_profiles  : {len(lp)} profiles")
     print(f"  keywords          : {len(kws)}")
-    print(f"  sources_config    : {len(srcs)} sources (written to sources_config.json if >0)")
+    print(f"  sources_config    : {len(srcs)} sources")
+    print(f"  manual_signals    : {len(man)} enabled rows")
     print(f"  wrote             : {CONFIG_PATH.resolve()}")
     for key in ("buyer_profiles", "scoring", "markets"):
         if not config.get(key):

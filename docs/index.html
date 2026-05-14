@@ -194,9 +194,12 @@ select.filter-sel:focus{outline:none;border-color:var(--green);color:var(--text)
 
 <header>
   <h1>🟢 Green Gregory OS</h1>
-  <div style="display:flex;align-items:center;gap:10px">
+  <div style="display:flex;align-items:center;gap:8px">
     <span id="last-updated">loading…</span>
-    <button id="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    <button id="refresh-btn" onclick="loadData()" title="Reload dashboard.json">↻ Refresh</button>
+    <a href="https://github.com/Mgregory2K/unified_dashboard_lite/actions" target="_blank" rel="noopener"
+       style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;text-decoration:none"
+       title="Open GitHub Actions to trigger a scan">▶ Run Scanner</a>
   </div>
 </header>
 
@@ -254,6 +257,9 @@ select.filter-sel:focus{outline:none;border-color:var(--green);color:var(--text)
     </button>
     <button class="nav-btn" data-panel="workbench" onclick="showPanel('workbench',this)">
       ⚙ Workbench <span class="nav-count" id="cnt-workbench">0</span>
+    </button>
+    <button class="nav-btn" data-panel="add" onclick="showPanel('add',this)">
+      ➕ Add Item <span class="nav-count" id="cnt-add">—</span>
     </button>
   </div>
   <div class="sidebar-sep"></div>
@@ -438,6 +444,103 @@ select.filter-sel:focus{outline:none;border-color:var(--green);color:var(--text)
     <div id="workbench-list"></div>
   </div>
 
+  <!-- ── Add Item ── -->
+  <div class="panel" id="panel-add">
+    <div class="section-hd">Add Manual Signal</div>
+
+    <!-- Architecture notice -->
+    <div style="background:var(--bg3);border:1px solid var(--amber);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:12px;line-height:1.7">
+      <div style="color:var(--amber);font-weight:600;margin-bottom:6px">📋 How Manual Signals Work</div>
+      <div style="color:var(--text)">Manual signals are stored in <strong>Google Sheets</strong> so they appear on every device — phone, desktop, any browser.</div>
+      <div style="color:var(--muted);margin-top:4px">After adding a row, click <strong>↻ Refresh Data</strong> below or use <strong>▶ Run Scanner</strong> in the header to trigger a workflow run and pull the new record into the dashboard.</div>
+    </div>
+
+    <!-- Primary: Google Form -->
+    <div style="margin-bottom:20px">
+      <div class="section-hd">Option A — Google Form (recommended from phone)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Opens a Google Form pre-configured for the Manual Signals tab. Works from any device. Responses go directly to the Sheet.
+      </div>
+      <div id="form-link-area">
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--muted)">
+          No Google Form URL configured yet.<br>
+          <strong style="color:var(--text)">To set up:</strong>
+          <ol style="margin:6px 0 0 16px;line-height:2">
+            <li>Open your Google Sheet</li>
+            <li>Go to <strong>Tools → Create a new form</strong></li>
+            <li>Link it to the <strong>Manual Signals</strong> tab</li>
+            <li>Copy the form URL and paste it in the field below</li>
+          </ol>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input id="form-url-input" class="search-box" style="flex:1;min-width:200px" placeholder="Paste Google Form URL here…">
+            <button class="drawer-action-btn btn-create" onclick="saveFormUrl()" style="white-space:nowrap">Save URL</button>
+          </div>
+        </div>
+        <div id="form-link-btn" style="display:none;margin-top:10px">
+          <a id="form-open-link" href="#" target="_blank" rel="noopener"
+             style="display:inline-block;padding:10px 20px;background:var(--green-d);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:13px;font-weight:600;text-decoration:none">
+            📋 Open Google Form ↗
+          </a>
+          <button onclick="clearFormUrl()" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;margin-left:10px">Change URL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Secondary: Sheet direct -->
+    <div style="margin-bottom:20px">
+      <div class="section-hd">Option B — Edit Sheet directly</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Opens the Manual Signals tab in Google Sheets. Add a row, then refresh the dashboard.
+      </div>
+      <a href="https://docs.google.com/spreadsheets/d/173j8XDlDeBvsFdRyqBZ6oGhNzIyCntDO_esqRMvdZ1w/edit#gid=0"
+         target="_blank" rel="noopener"
+         style="display:inline-block;padding:8px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;text-decoration:none">
+        📊 Open Google Sheet ↗
+      </a>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)">
+        Required columns: <code>enabled, signal_type, source_name, source_type, title, description, location, price, url, phone, website, email, category, keywords, notes, status, created_at</code>
+      </div>
+    </div>
+
+    <!-- Refresh trigger -->
+    <div style="margin-bottom:20px">
+      <div class="section-hd">After Adding — Refresh Data</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        After adding to the Sheet, the dashboard needs a workflow run to pick up the new data.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="drawer-action-btn btn-create" onclick="loadData()" style="font-size:13px">↻ Refresh Dashboard</button>
+        <a href="https://github.com/Mgregory2K/unified_dashboard_lite/actions" target="_blank" rel="noopener"
+           class="drawer-action-btn" style="border-color:var(--blue);color:var(--blue);text-decoration:none">▶ Run Scanner Workflow</a>
+      </div>
+    </div>
+
+    <!-- Draft scratchpad — localStorage is fine for temporary drafts -->
+    <div>
+      <div class="section-hd">Draft Scratchpad (temporary — not saved to Sheet)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        Use this to compose your signal before pasting it into the Form or Sheet. <strong>This does not save to the backend.</strong>
+      </div>
+      <textarea id="add-draft" rows="6"
+        placeholder="Paste or type your listing/ISO/operator details here as a draft…"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:13px;resize:vertical;font-family:inherit"
+        oninput="saveDraft()"></textarea>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center">
+        <span style="font-size:11px;color:var(--muted)">Draft auto-saves locally.</span>
+        <button class="filter-btn" onclick="clearDraft()">✕ Clear draft</button>
+      </div>
+    </div>
+
+    <!-- Sheet manual signals loaded into dashboard -->
+    <div style="margin-top:24px">
+      <div class="section-hd">Sheet Manual Signals in Dashboard (<span id="add-sheet-count">0</span>)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+        These records came from the Manual Signals Sheet tab and are included in All Signals and the correct lanes.
+      </div>
+      <div id="add-sheet-list"></div>
+    </div>
+  </div>
+
   <!-- ── Config ── -->
   <div class="panel" id="panel-config">
     <div class="section-hd">Sources Configuration</div>
@@ -557,19 +660,24 @@ function saveManualMatches(mm) {
 
 function mergeLocalSignals() {
   const local = getManualSignals();
-  if (!local.length) return;
   const mm = getManualMatches();
   const matchedIds = new Set(mm.flatMap(m => [m.source_id, m.target_id]));
+
+  // Start from server-side signals only (strip any previously merged manual items)
+  const serverSignals = (D.all_signals || []).filter(s => !s.is_manual);
+
   const extra = local.map(s => ({
     ...s,
     data_origin: 'manual',
     is_manual: true,
     is_seed: false,
     match_status: matchedIds.has(s.id) ? 'manual_match' : 'unmatched',
-    normalized_signal_type: s.normalized_signal_type || s.signal_type || 'supply',
+    normalized_signal_type: SIGNAL_TYPE_NORM_JS[s.signal_type] || s.normalized_signal_type || s.signal_type || 'supply',
   }));
-  D.all_signals = [...(D.all_signals || []), ...extra];
+
+  D.all_signals = [...serverSignals, ...extra];
   D.unmatched_signals = D.all_signals.filter(s => s.match_status === 'unmatched');
+
   // Rebuild lane splits
   const LANE_MAP = {supply:'supply_items',demand:'demand_items',operator:'operator_items',
     infrastructure:'infrastructure_items',business_for_sale:'business_for_sale_items',
@@ -577,8 +685,26 @@ function mergeLocalSignals() {
   for (const [lane, key] of Object.entries(LANE_MAP)) {
     D[key] = D.all_signals.filter(s => s.normalized_signal_type === lane);
   }
-  // Bump mode if needed
-  if (D.data_mode === 'EMPTY' && D.all_signals.length > 0) D.data_mode = 'SIGNALS_ONLY';
+
+  // Honest mode upgrade — computed fresh every merge
+  const hasManual  = extra.length > 0;
+  const hasLive    = serverSignals.filter(s => !s.is_seed).length > 0;
+  const hasSeed    = serverSignals.filter(s => s.is_seed).length > 0;
+  const hasMatches = (D.matched_deals || []).length > 0 || mm.length > 0;
+
+  if (!hasManual && !hasLive && !hasSeed) {
+    D.data_mode = 'EMPTY';
+  } else if (hasManual && !hasLive && !hasSeed && !hasMatches) {
+    D.data_mode = 'MANUAL';
+  } else if (hasManual && !hasLive && !hasSeed && hasMatches) {
+    D.data_mode = 'MANUAL';
+  } else if (!hasManual && hasSeed && !hasLive) {
+    D.data_mode = hasMatches ? 'DEMO' : 'SIGNALS_ONLY';
+  } else if (!hasManual && hasLive && !hasSeed) {
+    D.data_mode = hasMatches ? 'MATCHED' : 'SIGNALS_ONLY';
+  } else if (hasManual || hasLive || hasSeed) {
+    D.data_mode = hasMatches ? 'MIXED' : 'SIGNALS_ONLY';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -601,6 +727,7 @@ function render() {
   renderMatches();
   renderAssembly();
   renderWorkbench();
+  renderAddSaved();
   renderConfig();
   renderFeeds();
   renderPL();
@@ -631,33 +758,24 @@ function renderBanner() {
 // KPIs
 // ═══════════════════════════════════════════════════════════════
 function renderKPIs() {
-  const k = D.kpi || {};
-  const profit = fmt$(k.total_profit_est || 0);
+  // Always read from merged live state — D.kpi is stale server data
+  const totalSignals  = (D.all_signals || []).length;
+  const unmatched     = (D.unmatched_signals || []).length;
+  const totalMatches  = (D.matched_deals || []).length + getManualMatches().length;
+  const assemblyCount = (D.assembly_opps || []).length;
+  const buyerLeads    = (D.buyer_leads || []).length;
+  const manualCount   = (D.all_signals || []).filter(s => s.is_manual).length;
+  const liveCount     = (D.all_signals || []).filter(s => !s.is_manual && !s.is_seed).length;
+  const profit        = fmt$((D.kpi || {}).total_profit_est || 0);
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-value">${k.total_signals || D.all_signals?.length || 0}</div>
-      <div class="kpi-label">Total Signals</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value amber">${k.unmatched_signals || D.unmatched_signals?.length || 0}</div>
-      <div class="kpi-label">Unmatched</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value teal">${k.total_matches || D.matched_deals?.length || 0}</div>
-      <div class="kpi-label">Matched Deals</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value blue">${k.assembly_count || D.assembly_opps?.length || 0}</div>
-      <div class="kpi-label">Assembly Opps</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value purple">${k.total_buyers || D.buyer_leads?.length || 0}</div>
-      <div class="kpi-label">Buyer Leads</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-value">${profit}</div>
-      <div class="kpi-label">Est Profit</div>
-    </div>
+    <div class="kpi-card"><div class="kpi-value">${totalSignals}</div><div class="kpi-label">Total Signals</div></div>
+    <div class="kpi-card"><div class="kpi-value amber">${unmatched}</div><div class="kpi-label">Unmatched</div></div>
+    <div class="kpi-card"><div class="kpi-value teal">${totalMatches}</div><div class="kpi-label">Matched Deals</div></div>
+    <div class="kpi-card"><div class="kpi-value blue">${assemblyCount}</div><div class="kpi-label">Assembly Opps</div></div>
+    <div class="kpi-card"><div class="kpi-value purple">${manualCount}</div><div class="kpi-label">Manual Records</div></div>
+    <div class="kpi-card"><div class="kpi-value">${liveCount}</div><div class="kpi-label">Live Records</div></div>
+    <div class="kpi-card"><div class="kpi-value">${profit}</div><div class="kpi-label">Est Profit</div></div>
+    <div class="kpi-card"><div class="kpi-value">${buyerLeads}</div><div class="kpi-label">Buyer Leads</div></div>
   `;
 }
 
@@ -690,22 +808,21 @@ function renderLaneSummary() {
 // Update sidebar counts
 // ═══════════════════════════════════════════════════════════════
 function updateCounts() {
-  const mm = getManualMatches();
-  set('cnt-signals',   D.all_signals?.length || 0);
-  set('cnt-supply',    D.supply_items?.length || 0);
-  set('cnt-demand',    D.demand_items?.length || 0);
-  set('cnt-operators', D.operator_items?.length || 0);
-  set('cnt-infra',     D.infrastructure_items?.length || 0);
-  set('cnt-biz',       D.business_for_sale_items?.length || 0);
-  set('cnt-events',    D.event_items?.length || 0);
-  set('cnt-leads',     D.lead_items?.length || 0);
-  set('cnt-matches',   D.matched_deals?.length || 0);
-  set('cnt-assembly',  D.assembly_opps?.length || 0);
+  const mm  = getManualMatches();
+  const man = getManualSignals();
+  function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+  set('cnt-signals',   (D.all_signals || []).length);
+  set('cnt-supply',    (D.supply_items || []).length);
+  set('cnt-demand',    (D.demand_items || []).length);
+  set('cnt-operators', (D.operator_items || []).length);
+  set('cnt-infra',     (D.infrastructure_items || []).length);
+  set('cnt-biz',       (D.business_for_sale_items || []).length);
+  set('cnt-events',    (D.event_items || []).length);
+  set('cnt-leads',     (D.lead_items || []).length);
+  set('cnt-matches',   (D.matched_deals || []).length + mm.length);
+  set('cnt-assembly',  (D.assembly_opps || []).length);
   set('cnt-workbench', mm.length);
-  function set(id, v) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = v;
-  }
+  set('cnt-add',       man.length || '');
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -713,15 +830,24 @@ function updateCounts() {
 // ═══════════════════════════════════════════════════════════════
 function renderDashMatches() {
   const items = (D.matched_deals || []).slice(0, 5);
-  document.getElementById('dash-matches').innerHTML = items.length
-    ? items.map(d => matchCard(d)).join('')
-    : '<div class="empty"><strong>No matches yet</strong>Signals found — use the Workbench to create matches.</div>';
+  const mmItems = getManualMatches().slice(0, 5 - items.length);
+  const totalSignals = (D.all_signals || []).length;
+  const el = document.getElementById('dash-matches');
+  if (items.length) {
+    el.innerHTML = items.map(d => matchCard(d)).join('');
+  } else if (totalSignals > 0) {
+    el.innerHTML = `<div class="empty"><strong>No matches yet</strong>${totalSignals} signal${totalSignals!==1?'s':''} collected — open any card and click <span style="color:var(--amber)">+ Manual Match</span> to create one.</div>`;
+  } else {
+    el.innerHTML = '<div class="empty"><strong>No matches yet</strong>Add signals via ➕ Add Item to get started.</div>';
+  }
 }
+
 function renderDashUnmatched() {
   const items = (D.unmatched_signals || []).slice(0, 5);
-  document.getElementById('dash-unmatched').innerHTML = items.length
+  const el = document.getElementById('dash-unmatched');
+  el.innerHTML = items.length
     ? items.map(s => signalCard(s)).join('')
-    : '<div class="empty">No unmatched signals.</div>';
+    : '<div class="empty" style="padding:16px">No unmatched signals. Add items via ➕ Add Item.</div>';
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1245,6 +1371,110 @@ function fmt$(v) {
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ═══════════════════════════════════════════════════════════════
+// Add Item — Google Form / Sheet backend
+// localStorage used ONLY for: draft text, form URL preference
+// Durable records live in Google Sheets → config.json → dashboard.json
+// ═══════════════════════════════════════════════════════════════
+
+function initAddPanel() {
+  const draft = localStorage.getItem('ggg_add_draft') || '';
+  const draftEl = document.getElementById('add-draft');
+  if (draftEl && draft) draftEl.value = draft;
+  const formUrl = localStorage.getItem('ggg_form_url') || '';
+  if (formUrl) _showFormBtn(formUrl);
+  const inputEl = document.getElementById('form-url-input');
+  if (inputEl && formUrl) inputEl.value = formUrl;
+}
+
+function saveDraft() {
+  const val = document.getElementById('add-draft')?.value || '';
+  localStorage.setItem('ggg_add_draft', val);
+}
+
+function clearDraft() {
+  localStorage.removeItem('ggg_add_draft');
+  const el = document.getElementById('add-draft');
+  if (el) el.value = '';
+}
+
+function saveFormUrl() {
+  const url = (document.getElementById('form-url-input')?.value || '').trim();
+  if (!url.startsWith('http')) { alert('Please enter a valid Google Form URL starting with https://'); return; }
+  localStorage.setItem('ggg_form_url', url);
+  _showFormBtn(url);
+}
+
+function clearFormUrl() {
+  localStorage.removeItem('ggg_form_url');
+  const btn = document.getElementById('form-link-btn');
+  if (btn) btn.style.display = 'none';
+  const inputEl = document.getElementById('form-url-input');
+  if (inputEl) inputEl.value = '';
+}
+
+function _showFormBtn(url) {
+  const btn = document.getElementById('form-link-btn');
+  if (btn) btn.style.display = 'block';
+  const link = document.getElementById('form-open-link');
+  if (link) link.href = url;
+}
+
+function renderAddPanel() {
+  initAddPanel();
+  const sheetSignals = (D.all_signals || []).filter(s => s.data_origin === 'manual' && s.source_site === 'sheets.google.com');
+  const countEl = document.getElementById('add-sheet-count');
+  if (countEl) countEl.textContent = sheetSignals.length;
+  const listEl = document.getElementById('add-sheet-list');
+  if (!listEl) return;
+  if (!sheetSignals.length) {
+    listEl.innerHTML = '<div class="empty" style="padding:16px"><strong>No Sheet manual signals yet</strong>Add a row to the Manual Signals tab in Google Sheets, then run the workflow.</div>';
+    return;
+  }
+  listEl.innerHTML = sheetSignals.map(s => signalCard(s)).join('');
+}
+
+// getManualSignals returns empty — localStorage no longer a signal source
+function getManualSignals() { return []; }
+function saveManualSignals() {}
+
+function mergeLocalSignals() {
+  // Sheet manual signals are already baked into D.all_signals from dashboard.json
+  // Re-stamp match_status for localStorage manual matches
+  const mm = getManualMatches();
+  const matchedIds = new Set(mm.map(m => m.source_id).concat(mm.map(m => m.target_id)));
+  D.all_signals = (D.all_signals || []).map(s => ({
+    ...s,
+    match_status: matchedIds.has(s.id) ? 'manual_match' : (s.match_status || 'unmatched'),
+  }));
+  D.unmatched_signals = D.all_signals.filter(s => s.match_status === 'unmatched');
+  const LANE_MAP = {supply:'supply_items',demand:'demand_items',operator:'operator_items',
+    infrastructure:'infrastructure_items',business_for_sale:'business_for_sale_items',
+    event:'event_items',lead:'lead_items'};
+  for (const [lane, key] of Object.entries(LANE_MAP)) {
+    D[key] = D.all_signals.filter(s => (s.normalized_signal_type || s.signal_type) === lane);
+  }
+  // Recompute mode from baked data
+  const all = D.all_signals || [];
+  const hasManual  = all.some(s => s.data_origin === 'manual');
+  const hasLive    = all.some(s => s.data_origin === 'live');
+  const hasSeed    = all.some(s => s.data_origin === 'seed');
+  const hasMatches = (D.matched_deals || []).length > 0 || mm.length > 0;
+  if (!all.length) {
+    D.data_mode = 'EMPTY';
+  } else if (hasManual && !hasLive && !hasSeed) {
+    D.data_mode = hasMatches ? 'MANUAL' : 'MANUAL';
+  } else if (!hasManual && hasSeed && !hasLive) {
+    D.data_mode = hasMatches ? 'DEMO' : 'SIGNALS_ONLY';
+  } else if (!hasManual && hasLive && !hasSeed) {
+    D.data_mode = hasMatches ? 'MATCHED' : 'SIGNALS_ONLY';
+  } else {
+    D.data_mode = hasMatches ? 'MIXED' : 'SIGNALS_ONLY';
+  }
+}
+
+function renderAddSaved() { renderAddPanel(); }
 
 loadData();
 </script>
